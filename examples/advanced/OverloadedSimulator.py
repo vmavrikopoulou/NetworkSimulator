@@ -16,7 +16,7 @@ class CustomSimulator(Simulator):
         This can be overridden to implement delays, topology, failures, etc.
         :param message:
         :param receiver:
-        :return:
+        :return: MessageState.DELIVERED, MessageState.DELAYED, MessageState.FAILED
         """
         receiver.receiveMessage(message)
         return MessageState.DELIVERED
