@@ -148,5 +148,4 @@ Methods:
 
 ## Advanced Usage
 
-The simulator handles the sending and receiving of messages. If you want to add delays or failures or artifacts you can overload this method of the simulator:
-
+The simulator handles the sending and receiving of messages. If you want to add delays or failures or artifacts you can overload this method of the simulator. See the /examples/advanced folder for an example of this.
