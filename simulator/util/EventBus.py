@@ -1,0 +1,37 @@
+import uuid
+
+class EventBus:
+    topics = {}
+    subscriberIds = {}
+    
+    def __init__(self):
+        pass
+    
+    def subscribe(self, topic: object, callback: object) -> object:
+        if topic not in self.topics:
+            self.topics[topic] = {}
+        
+        subscriptionId = str(uuid.uuid4())
+        self.subscriberIds[subscriptionId] = topic
+        self.topics[topic][subscriptionId] = callback
+        
+        return subscriptionId
+    
+    def emit(self, topic, data=True):
+        if topic in self.topics:
+            for subscriptionId in self.topics[topic]:
+                self.topics[topic][subscriptionId](data)
+    
+    def unsubscribe(self, subscriptionId):
+        if subscriptionId is None:
+            return
+        
+        if subscriptionId in self.subscriberIds:
+            topic = self.subscriberIds[subscriptionId]
+            if topic in self.topics:
+                self.topics[topic].pop(subscriptionId)
+            
+            self.subscriberIds.pop(subscriptionId)
+        else:
+            print("ERROR: BluenetEventBus: Subscription ID ", subscriptionId, " cannot be found.")
+
