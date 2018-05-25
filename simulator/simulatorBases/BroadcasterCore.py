@@ -27,9 +27,17 @@ class BroadcasterCore:
         self.payload = payload
         
     def generateMessage(self, targetCrownstoneId):
+        rssi = self.getRssiToCrownstone(targetCrownstoneId)
+        
+        if rssi is None:
+            return None
+        
+        return { "address": self.address, "payload" : self.payload, "rssi": rssi }
+    
+    def getRssiToCrownstone(self, targetCrownstoneId):
         raise SimulatorException(
             SimulatorError.IMPLEMENTATION_MISSING,
-            "Method generateMessage should be overloaded for a Broadcaster"
+            "Method getRssiToCrownstone should be overloaded for a Broadcaster"
         )
         
     def setTime(self, time):

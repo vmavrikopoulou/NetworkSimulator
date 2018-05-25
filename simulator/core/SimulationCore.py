@@ -88,13 +88,6 @@ class SimulationCore:
                 for crownstone in self.crownstones:
                     message = broadcaster.generateMessage(crownstone.id)
                     if message is not None:
-                        if "address" not in message:
-                            raise SimulatorException(SimulatorError.IMPLEMENTATION_ERROR, "Message from broadcaster should contain address.")
-                        if "payload" not in message:
-                            raise SimulatorException(SimulatorError.IMPLEMENTATION_ERROR, "Message from broadcaster should contain payload.")
-                        if "rssi" not in message:
-                            raise SimulatorException(SimulatorError.IMPLEMENTATION_ERROR, "Message from broadcaster should contain rssi.")
-                        
                         crownstone.newMeasurement(message)
                     
         # last step we deliver all messages that were sent in the last round.

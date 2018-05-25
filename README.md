@@ -90,13 +90,10 @@ Custom Broadcasters inherit the BroadcasterCore class.
 > This should be set before you start the simulation. It is the advertising interval in milliseconds and the default payload. This payload will be repeated unless you change it later using the changePayload method.
 > IBeacons for instance will never change their payload.
 
-> ##### generateMessage(targetCrownstoneId: string)
+> ##### getRssiToCrownstone(targetCrownstoneId: string)
 > The simulator will ask your broadcaster to generate a message for this CrownstoneId. The simulator will take your advertising interval into account so you don't have to worry about that.
-> The message should be in this format:
 >
->```{"address": < address of broadcaster >, "payload": < data >, "rssi": int}```
->
-> If you do not want to send a message to that Crownstone, just return ```None```, else return the message.
+> If you do not want to send a message to that Crownstone, just return ```None```, else return the rssi.
 
 #### Available Methods:
 
