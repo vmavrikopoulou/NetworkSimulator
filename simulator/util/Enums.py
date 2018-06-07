@@ -4,3 +4,4 @@ class MessageState(Enum):
     DELIVERED = "DELIVERED"
     FAILED = "FAILED"
     DELAYED = "DELAYED"
+    SKIPPED = "SKIPPED"

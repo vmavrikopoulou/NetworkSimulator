@@ -97,7 +97,7 @@ class SimulationCore:
             if self.messages[mId]["sentTime"] < self.t:
                 for crownstone in self.crownstones:
                     status = self.handleMessage(self.messages[mId], crownstone)
-                    if status == MessageState.DELIVERED:
+                    if status == MessageState.DELIVERED or status == MessageState.SKIPPED:
                         self.messages[mId]["handled"][crownstone.id] = True
                     elif status == MessageState.FAILED:
                         self.messages[mId]["handled"][crownstone.id] = False
@@ -123,6 +123,9 @@ class SimulationCore:
         :param receiver:
         :return:
         """
+        if message["sender"] == receiver.id:
+            return MessageState.SKIPPED
+        
         receiver.receiveMessage(message)
         return MessageState.DELIVERED
     

@@ -1,4 +1,6 @@
 from simulator.core.SimulationCore import SimulationCore
+from simulator.core.gui.SimulationGui import SimulationGui
+from simulator.util.JsonFileStore import JsonFileStore
 
 class Simulator(SimulationCore):
     """
