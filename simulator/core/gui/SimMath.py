@@ -52,16 +52,18 @@ class SimMath:
         distanceSum = 0
         crownstoneId = crownstone["id"]
         for beacon in self.gui.beacons:
-            distanceSum += self._getDistance(beacon, x, y, z)
+            if crownstoneId in beacon["transmitting"]:
+                distanceSum += self._getDistance(beacon, x, y, z)
     
         std = 0
         for beacon in self.gui.beacons:
-            distance = self._getDistance(beacon, x, y, z)
-            factor = (1 - distance / distanceSum)
-            if factor == 0:
-                return beacon["transmitting"][crownstoneId]["std"]
-            
-            std += factor * beacon["transmitting"][crownstoneId]["std"]
+            if crownstoneId in beacon["transmitting"]:
+                distance = self._getDistance(beacon, x, y, z)
+                factor = (1 - distance / distanceSum)
+                if factor == 0:
+                    return beacon["transmitting"][crownstoneId]["std"]
+                
+                std += factor * beacon["transmitting"][crownstoneId]["std"]
         return std
 
     def getRssiCalibrationAt(self, x, y, z):

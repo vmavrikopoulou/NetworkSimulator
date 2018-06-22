@@ -12,6 +12,8 @@ class SimulationCore:
     eventBus = None
     
     
+    guiMode = None
+    
     messages = {}
     
     t = 0 # time in seconds

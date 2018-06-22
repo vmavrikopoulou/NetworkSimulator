@@ -124,8 +124,9 @@ class SimOverlays:
         maxSTD = 0
         minSTD = 10000
         for beacon in self.gui.beacons:
-            maxSTD = max(maxSTD, beacon["transmitting"][self.gui.selectedCrownstone]["std"])
-            minSTD = min(minSTD, beacon["transmitting"][self.gui.selectedCrownstone]["std"])
+            if self.gui.selectedCrownstone in beacon["transmitting"]:
+                maxSTD = max(maxSTD, beacon["transmitting"][self.gui.selectedCrownstone]["std"])
+                minSTD = min(minSTD, beacon["transmitting"][self.gui.selectedCrownstone]["std"])
 
         self.gui.simColorRange.startRange = minSTD
         self.gui.simColorRange.endRange = maxSTD

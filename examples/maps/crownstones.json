@@ -1,4 +1,5 @@
 [
   {"id": "crownstone1", "x": -10, "y": 2, "z": 0.5},
-  {"id": "crownstone2", "x": -6, "y": 2, "z": 0.5}
+  {"id": "crownstone2", "x": -6, "y": 2, "z": 0.5},
+  {"id": "crownstone3", "x": -3, "y": 8, "z": 0.5}
 ]

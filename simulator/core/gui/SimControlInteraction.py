@@ -1,3 +1,4 @@
+from simulator.core.gui.SimControlPanels import ControlModes
 from simulator.core.gui.SimOverlays import OverlayModes
 
 
@@ -27,3 +28,32 @@ class SimControlInteraction:
             self.gui.selectedOverlayMode = OverlayModes.DISABLED
         else:
             self.gui.selectedOverlayMode = value
+            
+            
+    def controlOverlayMode(self):
+        self.gui.controlMode = ControlModes.OVERLAYS
+
+    def controlUserMovementMode(self):
+        self.gui.controlMode = ControlModes.USER_MOVEMENT
+
+    def controlSelectMode(self):
+        self.gui.controlMode = ControlModes.SELECT
+        
+        
+    def togglePathDrawing(self):
+        self.gui.state["pathDrawing"] = not self.gui.state["pathDrawing"]
+        
+    def toggleDrawRoomOverlays(self):
+        self.gui.drawRoomOverlays = not self.gui.drawRoomOverlays
+    
+    def toggleDrawSourceCrownstones(self):
+        self.gui.drawSourceCrownstones = not self.gui.drawSourceCrownstones
+    
+    def toggleDrawSourceBeacons(self):
+        self.gui.drawSourceBeacons = not self.gui.drawSourceBeacons
+    
+    def toggleDrawUserPath(self):
+        self.gui.drawUserPath = not self.gui.drawUserPath
+        
+        
+        

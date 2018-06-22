@@ -2,7 +2,8 @@
   {
     "id": "beacon1", "x": -1,  "y": 2,  "z": 0.5,  "transmitting": {
       "crownstone1": {"mean": -88, "std": 6},
-      "crownstone2": {"mean": -80, "std": 7}
+      "crownstone2": {"mean": -80, "std": 7},
+      "crownstone3": {"mean": -70, "std": 5}
     }
   },
   {

@@ -9,6 +9,7 @@ from simulator.core.gui.SimControlInteraction import SimControlInteraction
 from simulator.core.gui.SimInteraction import SimInteraction
 from simulator.core.gui.SimMath import SimMath
 from simulator.core.gui.SimOverlays import SimOverlays, OverlayModes
+from simulator.core.gui.SimControlPanels import SimControlPanels, ControlModes
 
 
 class SimulationGui(GuiCore):
@@ -22,19 +23,31 @@ class SimulationGui(GuiCore):
     mapData = None
     crownstones = None
     beacons = None
+    rooms = None
     config = None
     
     selectedCrownstone = None
     selectedOverlayMode = OverlayModes.DISABLED
+    controlMode = ControlModes.SELECT
+    
+    state = {}
+    
+    drawRoomOverlays = True
+    drawSourceCrownstones = True
+    drawSourceBeacons = True
+    drawUserPath = True
     
 
-    def __init__(self, width = 1200, height = 800):
+    def __init__(self, width = 1400, height = 800):
         super().__init__(width, height)
         self.controlInteraction = SimControlInteraction(self)
         self.interaction = SimInteraction(self)
         self.simMath = SimMath(self)
         self.simColorRange = SimColorRange(self)
         self.simOverlays = SimOverlays(self)
+        self.simControlPanels = SimControlPanels(self)
+        
+        self.state["pathDrawing"] = False
         
     
     def loadMap(self, mapData):
@@ -48,21 +61,24 @@ class SimulationGui(GuiCore):
      
     def loadBeacons(self, beacons):
         self.beacons = beacons
+     
+    def loadRooms(self, rooms):
+        self.rooms = rooms
     
     def run(self):
-        screen = pygame.display.set_mode((self.width, self.height))
+        screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
     
         self.simMath.processNValues()
     
         while 1:
             self.prepareForRender()
             
-            screen.fill((0,62,82))
-
+            screen.fill((0,62,82,1.0))
+        
             drawnSimOverlay = self.drawOverview(screen)
-            self.drawControlPanel(screen)
+            self.simControlPanels.draw(screen)
             if drawnSimOverlay:
-                self.simColorRange.draw(screen,(self.width - 490, 10))
+                self.simColorRange.draw(screen,(self.width - 650, 10))
             
             pygame.display.flip()
             
@@ -72,94 +88,52 @@ class SimulationGui(GuiCore):
             time.sleep(0.01)
             
         
-    def drawControlPanel(self, screen):
-        drawHeight = 10
-        self.text(screen, "Options", (255, 255, 255), (self.width - 300, drawHeight))
-
-        drawHeight += 30
-        
-        self.createButton(
-            screen,
-            "Show NValues",
-            self.selectedOverlayMode == OverlayModes.NVALUE,
-            (self.width - 300, drawHeight),
-            self.controlInteraction.toggleNValueOverlay
-        )
-
-        drawHeight += 60
-
-        self.createButton(
-            screen,
-            "Show RSSI Calibration",
-            self.selectedOverlayMode == OverlayModes.RSSI_CALIBRATION,
-            (self.width - 300, drawHeight),
-            self.controlInteraction.toggleRSSICalibrationOverlay
-        )
-        
-        drawHeight += 60
-
-        self.text(screen, "Selected Crownstone:", (255, 255, 255), (self.width - 300, drawHeight))
-        drawHeight += 20
-        if self.selectedCrownstone is not None:
-            self.text(screen, str(self.selectedCrownstone), (255, 255, 255), (self.width - 250, drawHeight))
-            drawHeight += 40
-            self.createButton(
-                screen,
-                "Show STD",
-                self.selectedOverlayMode == OverlayModes.STD,
-                (self.width - 300, drawHeight),
-                self.controlInteraction.toggleSTDOverlay
-            )
-            
-            drawHeight += 60
-            
-            self.createButton(
-                screen,
-                "Show RSSI",
-                self.selectedOverlayMode == OverlayModes.RSSI,
-                (self.width - 300, drawHeight),
-                self.controlInteraction.toggleRSSIOverlay
-            )
-            drawHeight += 120
-            
-            self.createButton(
-                screen,
-                "Deselect Crownstone",
-                False,
-                (self.width - 300, drawHeight),
-                self.controlInteraction.deselectCrownstone
-            )
-        else:
-            self.text(screen, "None", (255, 255, 255), (self.width - 250, drawHeight))
-            
-        
-
-        
+   
 
     def drawOverview(self, screen):
         # the map area will leave 200 px from the right side available. Draw white background:
         mapPadding = 10
-        mapSide    = 500
+        mapSide    = 650
     
         mWidth  = self.width  - mapSide - 2 * mapPadding
         mHeight = self.height - 2 * mapPadding
         overviewSurface = pygame.Surface((mWidth, mHeight))
-
-        pygame.draw.rect(overviewSurface, (255, 255, 255), (0, 0, mWidth, mHeight))
+        roomOverviewSurface = pygame.Surface((mWidth, mHeight), pygame.SRCALPHA)
+        overviewSurface.fill((255, 255, 255, 255))
         drawnSimOverlay = self.simOverlays.draw(overviewSurface, mWidth, mHeight, (mapPadding, mapPadding))
         
+        
+        if self.drawRoomOverlays:
+            self.drawRooms(roomOverviewSurface, mWidth, mHeight)
+            overviewSurface.blit(roomOverviewSurface,(0,0))
         self.drawMap(overviewSurface,mWidth,mHeight)
-        self.drawCrownstones(overviewSurface,(mapPadding, mapPadding))
-        self.drawBeacons(overviewSurface, (mapPadding, mapPadding))
+        
+        if self.drawSourceCrownstones:
+            self.drawCrownstones(overviewSurface,(mapPadding, mapPadding))
+            
+        if self.drawSourceBeacons:
+            self.drawBeacons(overviewSurface, (mapPadding, mapPadding))
         
         screen.blit(overviewSurface, (mapPadding, mapPadding))
         
         return drawnSimOverlay
         
+        
+    def drawRooms(self, surf, mWidth, mHeight):
+        if self.rooms is None:
+            return
+    
+        for room in self.rooms:
+            convertedPointList = []
+            for corner in room["corners"]:
+                convertedPointList.append(self.xyMetersToPixels(corner))
+            
+            pygame.draw.polygon(surf, (room["color"][0],room["color"][1],room["color"][2],60), convertedPointList)
+            pygame.draw.polygon(surf, room["color"], convertedPointList, 3)
+            
+
 
     def drawMap(self, surf, mWidth, mHeight):
-        
-        
         # draw map
         m = self.mapData
         if m is not None:
