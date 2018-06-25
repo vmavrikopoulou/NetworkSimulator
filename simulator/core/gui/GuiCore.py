@@ -3,6 +3,10 @@ import math
 import numpy
 from pygame import gfxdraw
 
+from simulator.topics.Topics import GuiTopics
+from simulator.util.EventBus import EventBus
+
+SimulationEventBus = EventBus()
 
 class GuiCore:
     
@@ -38,7 +42,7 @@ class GuiCore:
 
     def createSmallButton(self, surface, text, state, pos, callback):
         border = 3
-        w = 180
+        w = 200
         h = 35
         self._createButton(surface, text, state, pos, callback, border, w, h, True)
 
@@ -80,20 +84,23 @@ class GuiCore:
     
     def _handleKeystrokes(self, event):
         if event.type == 2:  # key press
+            SimulationEventBus.emit(GuiTopics.keyPress, event.key)
             if event.key == 27:
                 sys.exit()
+            elif event.key == 8:
+                pass
             else:
                 print("unknown keystroke", event.key)
 
-    
     def _handleMouse(self, event):
         if event.type == 5:  # mouse down
             self.mouseDown = True
             self.timeMouseDown = time.time()
-            
+            self.pressedMouseDown(event.pos)
 
         elif event.type == 6:  # mouse up
             self.mouseDown = False
+            self.pressedMouseUp(event.pos)
             if time.time() - self.timeMouseDown < 0.5:
                 # valid click
                 for area in self.clickableAreas:
@@ -109,8 +116,15 @@ class GuiCore:
     def pressedMouseMove(self,pos):
         pass
 
-    
-    
+    """Overload me"""
+    def pressedMouseDown(self, pos):
+        pass
+
+    """Overload me"""
+    def pressedMouseUp(self, pos):
+        SimulationEventBus.emit(GuiTopics.mousePress, pos)
+        pass
+
     def _posInRegion(self, pos, rect):
         """
         rect is [0:topx, 1:topy, 2:w, 3:h]

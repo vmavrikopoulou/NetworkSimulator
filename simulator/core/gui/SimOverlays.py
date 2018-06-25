@@ -19,27 +19,27 @@ class SimOverlays:
     def __init__(self, gui):
         self.gui = gui
         
-    def draw(self, surface, mWidth, mHeight, offset):
+    def draw(self, surface, mWidth, mHeight):
         if self.gui.selectedOverlayMode is None or self.gui.selectedOverlayMode == OverlayModes.DISABLED:
             return False
 
         if self.gui.selectedOverlayMode == OverlayModes.NVALUE:
-            return self.drawNValueOverlay(surface, mWidth, mHeight, offset)
+            return self.drawNValueOverlay(surface, mWidth, mHeight)
             
         elif self.gui.selectedOverlayMode == OverlayModes.RSSI_CALIBRATION:
-            return self.drawRssiCalibrationOverlay(surface, mWidth, mHeight, offset)
+            return self.drawRssiCalibrationOverlay(surface, mWidth, mHeight)
         
         if self.gui.selectedCrownstone is None:
             return False
         
         if self.gui.selectedOverlayMode == OverlayModes.RSSI:
-            return self.drawRssiOverlay(surface, mWidth, mHeight, offset)
+            return self.drawRssiOverlay(surface, mWidth, mHeight)
         elif self.gui.selectedOverlayMode == OverlayModes.STD:
-            return self.drawStdOverlay(surface, mWidth, mHeight, offset)
+            return self.drawStdOverlay(surface, mWidth, mHeight)
         
             
             
-    def drawNValueOverlay(self, surface, mWidth, mHeight, offset):
+    def drawNValueOverlay(self, surface, mWidth, mHeight):
         xBlockCount = math.ceil(mWidth/self.blockSize)
         yBlockCount = math.ceil(mHeight/self.blockSize)
         
@@ -57,14 +57,14 @@ class SimOverlays:
         for i in range(0,xBlockCount):
             for j in range(0,yBlockCount):
                 x,y    = self.gui.xyPxToZeroRefMeters(0.5*self.blockSize + i*self.blockSize, 0.5*self.blockSize + j*self.blockSize)
-                nValue = self.gui.simMath.getNValueAt(x,y,1)
+                nValue = self.gui.simMath.getNValueAt((x,y,1))
                 color  = self.gui.simColorRange.getColor(nValue)
                 
                 pygame.draw.rect(surface, color, (i*self.blockSize, j*self.blockSize, self.blockSize, self.blockSize))
                 
         return True
 
-    def drawRssiCalibrationOverlay(self, surface, mWidth, mHeight, offset):
+    def drawRssiCalibrationOverlay(self, surface, mWidth, mHeight):
         xBlockCount = math.ceil(mWidth / self.blockSize)
         yBlockCount = math.ceil(mHeight / self.blockSize)
 
@@ -77,14 +77,14 @@ class SimOverlays:
         for i in range(0, xBlockCount):
             for j in range(0, yBlockCount):
                 x, y = self.gui.xyPxToZeroRefMeters(0.5 * self.blockSize + i * self.blockSize, 0.5 * self.blockSize + j * self.blockSize)
-                nValue = self.gui.simMath.getRssiCalibrationAt(x, y, 1)
+                nValue = self.gui.simMath.getRssiCalibrationAt((x, y, 1))
                 color = self.gui.simColorRange.getColor(nValue)
     
                 pygame.draw.rect(surface, color, (i * self.blockSize, j * self.blockSize, self.blockSize, self.blockSize))
 
         return True
 
-    def drawRssiOverlay(self, surface, mWidth, mHeight, offset):
+    def drawRssiOverlay(self, surface, mWidth, mHeight):
         xBlockCount = math.ceil(mWidth/self.blockSize)
         yBlockCount = math.ceil(mHeight/self.blockSize)
         
@@ -107,7 +107,7 @@ class SimOverlays:
             for j in range(0,yBlockCount):
                 x,y   = self.gui.xyPxToZeroRefMeters(0.5*self.blockSize + i*self.blockSize, 0.5*self.blockSize + j*self.blockSize)
                 
-                rssi  = self.gui.simMath.getRssiToCrownstone(targetCrownstone, x,y,1)
+                rssi  = self.gui.simMath.getRssiToCrownstone(targetCrownstone, (x,y,1))
                 color = self.gui.simColorRange.getColor(rssi)
                 
                 pygame.draw.rect(surface, color, (i*self.blockSize, j*self.blockSize, self.blockSize, self.blockSize))
@@ -117,7 +117,7 @@ class SimOverlays:
 
 
 
-    def drawStdOverlay(self, surface, mWidth, mHeight, offset):
+    def drawStdOverlay(self, surface, mWidth, mHeight):
         xBlockCount = math.ceil(mWidth / self.blockSize)
         yBlockCount = math.ceil(mHeight / self.blockSize)
 
@@ -145,7 +145,7 @@ class SimOverlays:
                 x, y = self.gui.xyPxToZeroRefMeters(0.5 * self.blockSize + i * self.blockSize,
                                                     0.5 * self.blockSize + j * self.blockSize)
             
-                rssi = self.gui.simMath.getStdToCrownstone(targetCrownstone, x, y, 1)
+                rssi = self.gui.simMath.getStdToCrownstone(targetCrownstone, (x, y, 1))
                 color = self.gui.simColorRange.getColor(rssi)
             
                 pygame.draw.rect(surface, color, (i * self.blockSize, j * self.blockSize, self.blockSize, self.blockSize))

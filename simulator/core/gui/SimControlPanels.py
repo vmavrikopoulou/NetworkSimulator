@@ -9,6 +9,7 @@ class ControlModes(Enum):
     SELECT = "SELECT"
     OVERLAYS = "OVERLAYS"
     USER_MOVEMENT = "USER_MOVEMENT"
+    SIMULATOR = "SIMULATOR"
     
 class SimControlPanels:
     
@@ -27,56 +28,14 @@ class SimControlPanels:
             self.drawOverlayPanel(screen)
         elif self.gui.controlMode == ControlModes.USER_MOVEMENT:
             self.drawUserMovementPanel(screen)
+        elif self.gui.controlMode == ControlModes.SIMULATOR:
+            self.drawSimulatorPanel(screen)
             
         self.drawViewToggles(screen)
-            
-    
-    def drawViewToggles(self,screen):
-        drawHeight = self.gui.height - 220
-        sideDistance = 650
-        self.gui.text(screen, "Draw Options:", (255, 255, 255), (self.gui.width - sideDistance, drawHeight), True)
-
-        drawHeight += 25
         
-        self.gui.createSmallButton(
-            screen,
-            "Room overlays",
-            self.gui.drawRoomOverlays,
-            (self.gui.width - sideDistance, drawHeight),
-            self.gui.controlInteraction.toggleDrawRoomOverlays
-        )
-
-        drawHeight += 50
-
-        self.gui.createSmallButton(
-            screen,
-            "Source Crownstones",
-            self.gui.drawSourceCrownstones,
-            (self.gui.width - sideDistance, drawHeight),
-            self.gui.controlInteraction.toggleDrawSourceCrownstones
-        )
-
-        drawHeight += 50
-
-        self.gui.createSmallButton(
-            screen,
-            "Source Beacons",
-            self.gui.drawSourceBeacons,
-            (self.gui.width - sideDistance, drawHeight),
-            self.gui.controlInteraction.toggleDrawSourceBeacons
-        )
-
-        drawHeight += 50
-
-        self.gui.createSmallButton(
-            screen,
-            "User Path",
-            self.gui.drawUserPath,
-            (self.gui.width - sideDistance, drawHeight),
-            self.gui.controlInteraction.toggleDrawUserPath
-        )
-    
-    
+        
+        
+        
     def drawModeSelector(self, screen):
         drawHeight = 10
         self.gui.text(screen, "Select an operation mode", (255, 255, 255), (self.gui.width - 300, drawHeight))
@@ -85,7 +44,7 @@ class SimControlPanels:
     
         self.gui.createButton(
             screen,
-            "Start Overlay Mode",
+            "Overlay Mode",
             False,
             (self.gui.width - 300, drawHeight),
             self.gui.controlInteraction.controlOverlayMode
@@ -95,12 +54,61 @@ class SimControlPanels:
 
         self.gui.createButton(
             screen,
-            "Start User Movement Mode",
+            "User Movement Mode",
             False,
             (self.gui.width - 300, drawHeight),
             self.gui.controlInteraction.controlUserMovementMode
         )
+    
+        drawHeight += 80
+
+        self.gui.createButton(
+            screen,
+            "Simulator Mode",
+            False,
+            (self.gui.width - 300, drawHeight),
+            self.gui.controlInteraction.controlSimulatorMode
+        )
+
+
         
+    def drawSimulatorPanel(self, screen):
+        drawHeight = 10
+        self.gui.text(screen, "Simulator Mode", (255, 255, 255), (self.gui.width - 300, drawHeight))
+
+        drawHeight += 30
+
+        self.gui.createButton(
+            screen,
+            "Start",
+            self.gui.state["pathDrawing"] == True,
+            (self.gui.width - 300, drawHeight),
+            self.gui.controlInteraction.startSimulation
+        )
+
+        drawHeight += 60
+
+        self.gui.createButton(
+            screen,
+            "Simulate 1 seconds",
+            False,
+            (self.gui.width - 300, drawHeight),
+            self.gui.controlInteraction.simulate5Seconds
+        )
+
+        drawHeight += 60
+
+        # self.gui.createButton(
+        #     screen,
+        #     "Show Classifier Overlay",
+        #     False,
+        #     (self.gui.width - 300, drawHeight),
+        #     self.gui.controlInteraction.showClassifierOverlay
+        # )
+        
+        self.drawBackButton(screen)
+        
+      
         
         
     def drawUserMovementPanel(self, screen):
@@ -115,6 +123,16 @@ class SimControlPanels:
             self.gui.state["pathDrawing"] == True,
             (self.gui.width - 300, drawHeight),
             self.gui.controlInteraction.togglePathDrawing
+        )
+
+        drawHeight += 60
+
+        self.gui.createButton(
+            screen,
+            "Save to file",
+            False,
+            (self.gui.width - 300, drawHeight),
+            self.gui.simUserMovement.saveToFile
         )
         
         self.drawBackButton(screen)
@@ -194,3 +212,62 @@ class SimControlPanels:
         )
         
         
+
+
+
+
+    def drawViewToggles(self,screen):
+        drawHeight = self.gui.height - 270
+        sideDistance = 650
+        self.gui.text(screen, "Draw Options:", (255, 255, 255), (self.gui.width - sideDistance, drawHeight), True)
+
+        drawHeight += 25
+        
+        self.gui.createSmallButton(
+            screen,
+            "Room overlays",
+            self.gui.drawRoomOverlays,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawRoomOverlays
+        )
+
+        drawHeight += 50
+
+        self.gui.createSmallButton(
+            screen,
+            "Source Crownstones",
+            self.gui.drawSourceCrownstones,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawSourceCrownstones
+        )
+
+        drawHeight += 50
+
+        self.gui.createSmallButton(
+            screen,
+            "Simulation Crownstones",
+            self.gui.drawSimulationCrownstones,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawSimulationCrownstones
+        )
+
+        drawHeight += 50
+
+        self.gui.createSmallButton(
+            screen,
+            "Source Beacons",
+            self.gui.drawSourceBeacons,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawSourceBeacons
+        )
+
+        drawHeight += 50
+
+        self.gui.createSmallButton(
+            screen,
+            "User Path",
+            self.gui.drawUserPath,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawUserPath
+        )
+    

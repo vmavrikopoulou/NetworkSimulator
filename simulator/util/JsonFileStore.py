@@ -9,9 +9,10 @@ class JsonFileStore:
     filename = None
     
     
-    def __init__(self, filename):
+    def __init__(self, filename, openOnInit=True):
         self.filename = filename
-        self._loadData()
+        if openOnInit:
+            self._loadData()
     
     
     def _loadData(self):

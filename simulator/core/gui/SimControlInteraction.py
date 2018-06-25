@@ -39,6 +39,9 @@ class SimControlInteraction:
     def controlSelectMode(self):
         self.gui.controlMode = ControlModes.SELECT
         
+    def controlSimulatorMode(self):
+        self.gui.controlMode = ControlModes.SIMULATOR
+        
         
     def togglePathDrawing(self):
         self.gui.state["pathDrawing"] = not self.gui.state["pathDrawing"]
@@ -54,6 +57,16 @@ class SimControlInteraction:
     
     def toggleDrawUserPath(self):
         self.gui.drawUserPath = not self.gui.drawUserPath
+        
+    def toggleDrawSimulationCrownstones(self):
+        self.gui.drawSimulationCrownstones = not self.gui.drawSimulationCrownstones
+        
+        
+    def startSimulation(self):
+        self.gui.startSimulation()
+        
+    def simulate5Seconds(self):
+        self.gui.simulator.continueSimulation(0.2)
         
         
         

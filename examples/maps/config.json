@@ -1,3 +1,5 @@
 {
-  "rssiCalibration": -60
+  "rssiCalibration": -60,
+  "userWalkingSpeed": 1.1,
+  "simulationEndTimeS": 0.2
 }

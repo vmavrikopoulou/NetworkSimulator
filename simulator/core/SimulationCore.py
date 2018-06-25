@@ -11,18 +11,27 @@ class SimulationCore:
     
     eventBus = None
     
-    
     guiMode = None
     
     messages = {}
     
     t = 0 # time in seconds
     
+    
     def __init__(self):
         self.eventBus = EventBus()
+        
         self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
-        pass
 
+
+    def changeEventBus(self, eventBus):
+        self.eventBus = eventBus
+        for crownstone in self.crownstones:
+            crownstone.loadEventBus(self.eventBus)
+
+        for broadcaster in self.broadcasters:
+            broadcaster.loadEventBus(self.eventBus)
+    
     def loadInteractionModule(self, interactionModule):
         """
         This will load an interaction module into the core
@@ -68,6 +77,21 @@ class SimulationCore:
             self.tick()
             self.t = self.t + timeStep
     
+    def continueSimulation(self, duration, timeStep = 0.01):
+        """
+            Continue simulation
+            :param duration: simulation time in seconds
+            :param timeStep: time step size in milliseconds
+            :return:
+        """
+        if timeStep <= 0:
+            raise SimulatorException(SimulatorError.USER_INPUT_ERROR, "Invalid Step size. Must be larger than 0.")
+        
+        startT = self.t
+    
+        while self.t < (startT + duration):
+            self.tick()
+            self.t = self.t + timeStep
     
     
     def tick(self):
