@@ -285,7 +285,7 @@ class SimControlPanels:
 
         self.gui.createSmallButton(
             screen,
-            "User Indictor",
+            "User Indicator",
             
             self.gui.drawUser,
             (self.gui.width - sideDistance, drawHeight),
