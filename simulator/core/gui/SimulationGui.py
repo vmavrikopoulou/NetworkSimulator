@@ -37,6 +37,9 @@ class SimulationGui(GuiCore):
     config = None
 
     userBroadcaster = None
+    simulationRunning = False
+    simulationStarted = False
+    
     
     selectedCrownstone = None
     selectedOverlayMode = OverlayModes.DISABLED
@@ -49,6 +52,8 @@ class SimulationGui(GuiCore):
     drawSimulationCrownstones = True
     drawSourceBeacons = True
     drawUserPath = True
+    drawUserPathTimes = True
+    drawUser = True
     
     simulator = None
     
@@ -94,19 +99,27 @@ class SimulationGui(GuiCore):
     def loadRooms(self, rooms):
         self.rooms = rooms
         
-    def startSimulation(self):
+    def startSimulation(self, duration = None):
         self.userBroadcaster = SimUserBroadcaster(self.userData["address"], self)
         self.userBroadcaster.setBroadcastParameters(intervalMs=self.userData["intervalMs"], payload=self.userData["payload"])
         self.config["userWalkingSpeed"] = self.userData["userWalkingSpeed"]
         
         self.simulator.loadBroadcasters([self.userBroadcaster])
-        self.simulator.start(self.config["simulationEndTimeS"])
+        if duration is None:
+            duration = self.config["simulationEndTimeS"]
+        self.simulator.start(duration)
+        self.simulationStarted = True
+
+    def runSimulation(self):
+        if not self.simulationStarted:
+            self.startSimulation(0)
+        
+        self.simulationRunning = True
         
     def run(self):
         screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
     
         self.simMath.processNValues()
-        self.startSimulation()
     
         while 1:
             self.prepareForRender()
@@ -118,14 +131,22 @@ class SimulationGui(GuiCore):
             if drawnSimOverlay:
                 self.simColorRange.draw(screen,(self.width - 650, 10))
             
+            if self.simulationRunning:
+                time.sleep(0.001)
+            else:
+                time.sleep(0.01)
+
+            if self.simulationRunning:
+                self.simulator.continueSimulation(0.25)
+                self.text(screen, "SIMULATION RUNNING", (0,0,0), (20, 20))
+                self.text(screen, "T = " + "{:3.2f}".format(self.simulator.t), (0,0,0), (20, 50))
+            
+            
+            
             pygame.display.flip()
             
             # handle interaction events
             self.handleEvents(pygame.event.get())
-            
-            time.sleep(0.01)
-
-            self.simulator.continueSimulation(0.1)
         
    
 
@@ -186,7 +207,7 @@ class SimulationGui(GuiCore):
                     distance = math.sqrt(dx**2 + dy**2)
                     dt = distance / userSpeed
                     pathTime += dt
-                    if pointCount - counter < 5:
+                    if pointCount - counter < 5 and self.drawUserPathTimes:
                         self.text(surf, "{:3.1f}".format(pathTime) + 's', color, pos, True)
                 lastPos = pos
                 lastPathPoint = pathPoint
@@ -198,9 +219,9 @@ class SimulationGui(GuiCore):
                 self.drawAaCircle(surf, pos,3,self._getColor(colorStart, counter, pointCount))
                 counter += 1
                 
-        if self.userBroadcaster is not None:
-            pos = self.xyMetersToPixels((self.userBroadcaster.pos[0], self.userBroadcaster.pos[1]))
-            self.drawAaCircle(surf, pos, 30, (255, 0, 0))
+        if self.userBroadcaster is not None and self.drawUser:
+            pos = self.xyMetersToPixels(self.userBroadcaster.pos)
+            self.drawAaCircle(surf, pos, 5, (0,62,82))
             
                 
     def _getColor(self, startColor, counter, total):
@@ -263,7 +284,7 @@ class SimulationGui(GuiCore):
                 
             # draw zero point
             zeroPos = self.xyMetersToPixels(m["zeroPoint"])
-            self.drawAaCircle(surf, zeroPos, 10, (255, 0, 0))
+            self.drawAaCircle(surf, zeroPos, 8, (255, 0, 0))
 
     def drawCrownstones(self, surf, offset):
         for crownstone in self.crownstones:

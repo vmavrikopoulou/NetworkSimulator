@@ -58,6 +58,12 @@ class SimControlInteraction:
     def toggleDrawUserPath(self):
         self.gui.drawUserPath = not self.gui.drawUserPath
         
+    def toggleDrawUserPathIndicator(self):
+        self.gui.drawUser = not self.gui.drawUser
+        
+    def toggleDrawUserPathTimes(self):
+        self.gui.drawUserPathTimes = not self.gui.drawUserPathTimes
+        
     def toggleDrawSimulationCrownstones(self):
         self.gui.drawSimulationCrownstones = not self.gui.drawSimulationCrownstones
         
@@ -66,7 +72,12 @@ class SimControlInteraction:
         self.gui.startSimulation()
         
     def simulate5Seconds(self):
-        self.gui.simulator.continueSimulation(0.2)
+        self.gui.simulator.continueSimulation(5)
         
+    def runSimulation(self):
+        self.gui.runSimulation()
+        
+    def stopSimulation(self):
+        self.gui.simulationRunning = False
         
         

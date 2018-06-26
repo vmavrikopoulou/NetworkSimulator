@@ -56,15 +56,18 @@ class SimMath:
                 distanceSum += self._getDistance(beacon, sourcePos)
     
         std = 0
+        factorSum = 0
         for beacon in self.gui.beacons:
             if crownstoneId in beacon["transmitting"]:
                 distance = self._getDistance(beacon, sourcePos)
-                factor = (1 - distance / distanceSum)
-                if factor == 0:
+                if distance == 0:
                     return beacon["transmitting"][crownstoneId]["std"]
-                
+
+                factor = distanceSum / distance
+                factorSum += factor
                 std += factor * beacon["transmitting"][crownstoneId]["std"]
-        return std
+                
+        return std / factorSum
 
 
     def getStdToPosition(self, targetPos, sourcePos):
@@ -77,15 +80,19 @@ class SimMath:
         for std in stds:
             distanceSum += self._getDistance(targetPos, std["pos"])
 
-        std = 0
+
+        stdFinal = 0
+        factorSum = 0
         for std in stds:
             distance = self._getDistance(targetPos, std["pos"])
-            factor = (1 - distance / distanceSum)
-            if factor == 0:
+            if distance == 0:
                 return std["value"]
 
-            std += factor * std["value"]
-        return std
+            factor = distanceSum / distance
+            factorSum += factor
+            stdFinal += factor * std["value"]
+
+        return stdFinal / factorSum
     
 
     def getRssiCalibrationAt(self, sourcePos):
@@ -95,18 +102,21 @@ class SimMath:
             distanceSum += self._getDistance(beacon, sourcePos)
     
         rssiCalibrationResult = 0
+        factorSum = 0
         for beacon in self.gui.beacons:
             rssiCalibration = self.gui.config["rssiCalibration"]
             if "rssiCalibration" in beacon:
                 rssiCalibration = beacon["rssiCalibration"]
         
             distance = self._getDistance(beacon, sourcePos)
-            factor = (1 - distance / distanceSum)
-            if factor == 0:
+            if distance == 0:
                 return rssiCalibration
+
+            factor = distanceSum / distance
+            factorSum += factor
             rssiCalibrationResult += factor * rssiCalibration
     
-        return rssiCalibrationResult
+        return rssiCalibrationResult / factorSum
 
     def getNValueAt(self, sourcePos):
         distanceSum = 0
@@ -115,16 +125,20 @@ class SimMath:
             distanceSum += self._getDistance(beacon, sourcePos)
     
         NValue = 0
+        factorSum = 0
         for beacon in self.gui.beacons:
             distance = self._getDistance(beacon, sourcePos)
             if "NValue" not in beacon:
                 raise Exception("N value not in beacon. Run _processNValues first.")
-            factor = (1 - distance / distanceSum)
-            if factor == 0:
+            
+            if distance == 0:
                 return beacon["NValue"]
+            
+            factor = distanceSum / distance
+            factorSum += factor
             NValue += factor * beacon["NValue"]
-    
-        return NValue
+            
+        return NValue / factorSum
     
 
     def getRssiToCrownstone(self, crownstone, sourcePos):

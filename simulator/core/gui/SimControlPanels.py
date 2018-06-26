@@ -80,7 +80,7 @@ class SimControlPanels:
 
         self.gui.createButton(
             screen,
-            "Start",
+            "Start Predefined",
             self.gui.state["pathDrawing"] == True,
             (self.gui.width - 300, drawHeight),
             self.gui.controlInteraction.startSimulation
@@ -90,7 +90,7 @@ class SimControlPanels:
 
         self.gui.createButton(
             screen,
-            "Simulate 1 seconds",
+            "Simulate 5 seconds",
             False,
             (self.gui.width - 300, drawHeight),
             self.gui.controlInteraction.simulate5Seconds
@@ -98,13 +98,24 @@ class SimControlPanels:
 
         drawHeight += 60
 
-        # self.gui.createButton(
-        #     screen,
-        #     "Show Classifier Overlay",
-        #     False,
-        #     (self.gui.width - 300, drawHeight),
-        #     self.gui.controlInteraction.showClassifierOverlay
-        # )
+        if not self.gui.simulationRunning:
+            self.gui.createButton(
+                screen,
+                "Start live",
+                False,
+                (self.gui.width - 300, drawHeight),
+                self.gui.controlInteraction.runSimulation
+            )
+        else:
+            self.gui.createButton(
+                screen,
+                "Stop live",
+                False,
+                (self.gui.width - 300, drawHeight),
+                self.gui.controlInteraction.stopSimulation
+            )
+        
+
         
         self.drawBackButton(screen)
         
@@ -217,7 +228,7 @@ class SimControlPanels:
 
 
     def drawViewToggles(self,screen):
-        drawHeight = self.gui.height - 270
+        drawHeight = self.gui.height - 370
         sideDistance = 650
         self.gui.text(screen, "Draw Options:", (255, 255, 255), (self.gui.width - sideDistance, drawHeight), True)
 
@@ -269,5 +280,24 @@ class SimControlPanels:
             self.gui.drawUserPath,
             (self.gui.width - sideDistance, drawHeight),
             self.gui.controlInteraction.toggleDrawUserPath
+        )
+        drawHeight += 50
+
+        self.gui.createSmallButton(
+            screen,
+            "User Indictor",
+            
+            self.gui.drawUser,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawUserPathIndicator
+        )
+        drawHeight += 50
+
+        self.gui.createSmallButton(
+            screen,
+            "User Path Times",
+            self.gui.drawUserPathTimes,
+            (self.gui.width - sideDistance, drawHeight),
+            self.gui.controlInteraction.toggleDrawUserPathTimes
         )
     
