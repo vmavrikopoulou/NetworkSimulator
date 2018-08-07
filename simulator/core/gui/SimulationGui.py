@@ -9,10 +9,12 @@ from simulator.core.gui.SimColorRange import SimColorRange
 from simulator.core.gui.SimControlInteraction import SimControlInteraction
 from simulator.core.gui.SimInteraction import SimInteraction
 from simulator.core.gui.SimMath import SimMath
+from simulator.core.gui.SimResultBroadcaster import SimResultBroadcaster
 from simulator.core.gui.SimUserBroadcaster import SimUserBroadcaster
 from simulator.core.gui.SimUserMovement import SimUserMovement
 from simulator.core.gui.SimOverlays import SimOverlays, OverlayModes
 from simulator.core.gui.SimControlPanels import SimControlPanels, ControlModes
+from simulator.topics.Topics import Topics
 
 
 class SimulationGui(GuiCore):
@@ -51,7 +53,13 @@ class SimulationGui(GuiCore):
     drawUserPathTimes = True
     drawUser = True
     
+    screen = None
+    
     simulator = None
+
+    blockSize = 10
+    
+    resultMap = {}
     
     def __init__(self, width = 1280, height = 700):
         super().__init__(width, height)
@@ -98,7 +106,7 @@ class SimulationGui(GuiCore):
         self.simulator.loadBroadcasters([self.userBroadcaster])
         if duration is None:
             duration = self.config["simulationPredefinedEndpoint"]
-        self.simulator.start(duration)
+        self.simulator.start(duration, self.config["simulationTimeStepSeconds"])
         self.simulationStarted = True
 
     def runSimulation(self):
@@ -108,34 +116,35 @@ class SimulationGui(GuiCore):
         self.simulationRunning = True
         
     def run(self):
-        screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
+        self.screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
     
         while 1:
-            self.prepareForRender()
+            self.render(self.screen)
             
-            screen.fill((0,62,82,1.0))
-        
-            drawnSimOverlay = self.drawOverview(screen)
-            self.simControlPanels.draw(screen)
-            if drawnSimOverlay:
-                self.simColorRange.draw(screen,(self.width - 650, 10))
-            
-            if self.simulationRunning:
-                time.sleep(0.0001)
-            else:
-                time.sleep(0.01)
-
-            if self.simulationRunning:
-                self.simulator.continueSimulation(0.25)
-                self.text(screen, "SIMULATION RUNNING", (0,0,0), (20, 20))
-                self.text(screen, "T = " + "{:3.2f}".format(self.simulator.t), (0,0,0), (20, 50))
-            
-            
-            
-            pygame.display.flip()
-            
-            # handle interaction events
-            self.handleEvents(pygame.event.get())
+    def render(self, screen):
+        self.prepareForRender()
+    
+        screen.fill((0, 62, 82, 1.0))
+    
+        drawnSimOverlay = self.drawOverview(screen)
+        self.simControlPanels.draw(screen)
+        if drawnSimOverlay:
+            self.simColorRange.draw(screen, (self.width - 650, 10))
+    
+        if self.simulationRunning:
+            time.sleep(0.0001)
+        else:
+            time.sleep(0.01)
+    
+        if self.simulationRunning:
+            self.simulator.continueSimulation(0.25, self.config["simulationTimeStepSeconds"])
+            self.text(screen, "SIMULATION RUNNING", (0, 0, 0), (20, 20))
+            self.text(screen, "T = " + "{:3.2f}".format(self.simulator.t), (0, 0, 0), (20, 50))
+    
+        pygame.display.flip()
+    
+        # handle interaction events
+        self.handleEvents(pygame.event.get())
         
    
 
@@ -164,6 +173,8 @@ class SimulationGui(GuiCore):
             
         if self.drawUserPath:
             self.drawPath(overviewSurface)
+            
+        self.drawResultMap(overviewSurface)
         
         screen.blit(overviewSurface, (self.mapPadding, self.mapPadding))
         
@@ -270,6 +281,28 @@ class SimulationGui(GuiCore):
             self.drawAaCircle(surf, zeroPos, 8, (255, 0, 0))
 
 
+
+    def drawResultMap(self, surf):
+        if self.rooms is None:
+            return
+        
+        roomColorMap = {}
+        for room in self.rooms:
+            roomColorMap[room["id"]] = (room["color"][0],room["color"][1],room["color"][2],70)
+        
+        for xKey, xValue in self.resultMap.items():
+            for yKey, yValue in xValue.items():
+                x = xKey - 0.5 * self.blockSize
+                y = yKey - 0.5 * self.blockSize
+                if yValue is not None:
+                    if yValue in roomColorMap:
+                        pygame.draw.rect(surf, roomColorMap[yValue], (x, y, self.blockSize, self.blockSize))
+                    else:
+                        pygame.draw.rect(surf, (255,255,255,80), (x, y, self.blockSize, self.blockSize))
+                else:
+                    pygame.draw.rect(surf, (0, 0, 0, 50), (x, y, self.blockSize, self.blockSize))
+
+
     def drawSimCrownstones(self, surf, offset):
         if self.simulatorCrownstones is None:
             return
@@ -313,8 +346,55 @@ class SimulationGui(GuiCore):
         
         return mX, mY
     
-    def drawGroundTruth(self):
-        pass
-    
-    
-    
+    def getStaticResults(self):
+        self.startSimulation(self.config["trainingPhaseDurationSeconds"])
+        xBlockCount = math.ceil(self.mapWidth / self.blockSize)
+        yBlockCount = math.ceil(self.mapHeight / self.blockSize)
+
+        self.resultMap = {}
+        
+        if self.rooms is None:
+            return
+
+        for i in range(0, xBlockCount):
+            x = i * self.blockSize + 0.5 * self.blockSize
+            self.resultMap[x] = {}
+            for j in range(0, yBlockCount):
+                y = j * self.blockSize + 0.5 * self.blockSize
+
+                self.resultMap[x][y] = None
+                posInMeters = self.xyPxToZeroRefMeters(x,y)
+
+                self.simulator.resetSimulatorForResults()
+                # fake a user at this point
+                resultBroadcaster = SimResultBroadcaster(self.userData["address"], posInMeters, self)
+                resultBroadcaster.setBroadcastParameters(intervalMs=self.userData["intervalMs"], payload=self.userData["payload"])
+
+                self.simulator.loadBroadcasters([resultBroadcaster])
+                
+                def drawResult(roomId):
+                    # store results
+                    self.resultMap[x][y] = roomId
+                    
+                self.simulator.eventBus.subscribe(Topics.gotResult, { lambda data: drawResult(data["roomId"]) })
+                
+                self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
+                
+            self.render(self.screen)
+
+
+        self.simulator.resetSimulatorForResults()
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                

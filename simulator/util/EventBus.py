@@ -5,7 +5,8 @@ class EventBus:
     subscriberIds = {}
     
     def __init__(self):
-        pass
+        self.topics = {}
+        self.subscriberIds = {}
     
     def subscribe(self, topic: object, callback: object) -> object:
         if topic not in self.topics:
@@ -35,3 +36,7 @@ class EventBus:
         else:
             print("ERROR: BluenetEventBus: Subscription ID ", subscriptionId, " cannot be found.")
 
+
+    def destroy(self):
+        self.topics = {}
+        self.subscriberIds = {}

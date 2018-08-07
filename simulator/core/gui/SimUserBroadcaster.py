@@ -12,12 +12,12 @@ class SimUserBroadcaster(BroadcasterCore):
     
     pathFinished = False
     
-    pos = [0,0,1]
+    pos = [0,0]
     
     def __init__(self, address, gui):
         super().__init__(address="address")
         self.gui = gui
-        self.pos = [self.gui.simUserMovement.path[0][0],self.gui.simUserMovement.path[0][1],1]
+        self.pos = [self.gui.simUserMovement.path[0][0],self.gui.simUserMovement.path[0][1]]
     
     def getRssiToCrownstone(self, targetCrownstoneId):
         # get xyz coords of crownstoneId

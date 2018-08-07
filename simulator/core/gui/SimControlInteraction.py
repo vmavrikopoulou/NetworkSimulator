@@ -72,7 +72,7 @@ class SimControlInteraction:
         self.gui.startSimulation()
         
     def simulateNSeconds(self):
-        self.gui.simulator.continueSimulation(self.gui.config["simulationBatchTimeStepSizeSeconds"])
+        self.gui.simulator.continueSimulation(self.gui.config["simulationBatchTimeStepSizeSeconds"], self.gui.config["simulationTimeStepSeconds"])
         
     def runSimulation(self):
         self.gui.runSimulation()
@@ -81,7 +81,7 @@ class SimControlInteraction:
         self.gui.simulationRunning = False
 
     def getStaticResults(self):
-        pass
+        self.gui.getStaticResults()
 
     def getDynamicResults(self):
         pass

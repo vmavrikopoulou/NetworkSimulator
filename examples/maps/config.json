@@ -5,5 +5,7 @@
   "userWalkingSpeed": 1.1,
   "simulationPredefinedEndpoint": 0,
   "simulationBatchTimeStepSizeSeconds": 100,
-  "trainingPhaseDurationSeconds": 50
+  "trainingPhaseDurationSeconds": 50,
+  "simulationForMeasurementResultMaxSeconds":10,
+  "simulationTimeStepSeconds": 0.01
 }

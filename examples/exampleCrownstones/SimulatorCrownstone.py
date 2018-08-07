@@ -37,4 +37,5 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         print(self.time, self.id, "Scans indicate", data["address"], " with payload ", data["payload"], " and rssi:", data["rssi"])
         
         if data['rssi'] > -45:
-            self.sendMessage("I saw a beacon with more that -45 dB!")
+            self.sendMessage("I saw a beacon with more that -45 dB!" + str(data["rssi"]) + "   " + str(self.time))
+            

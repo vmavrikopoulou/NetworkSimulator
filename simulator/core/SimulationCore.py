@@ -16,13 +16,23 @@ class SimulationCore:
     messages = {}
     
     t = 0 # time in seconds
-    
+    abort = False
     
     def __init__(self):
-        self.eventBus = EventBus()
-        
-        self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
+        self.restart()
 
+
+    def restart(self):
+        if self.eventBus is not None:
+            self.eventBus.destroy()
+        
+        newEventBus = EventBus()
+        self.changeEventBus(newEventBus)
+        self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
+        self.eventBus.subscribe(Topics.gotResult, self._abortSimulation)
+
+    def _abortSimulation(self):
+        self.abort = True
 
     def changeEventBus(self, eventBus):
         self.eventBus = eventBus
@@ -34,18 +44,18 @@ class SimulationCore:
     
     def loadInteractionModule(self, interactionModule):
         """
-        This will load an interaction module into the core
-        :param interactionModule: instance inheriting the InteractionCore class
-        :return:
+            This will load an interaction module into the core
+            :param interactionModule: instance inheriting the InteractionCore class
+            :return:
         """
         self.interactionModule = interactionModule
         self.interactionModule.loadEventBus(self.eventBus)
 
     def loadCrownstones(self, crownstones):
         """
-        This will load the Crownstone simulators into the core
-        :param crownstones: List of class instances that inherit the CrownstoneCore class
-        :return:
+            This will load the Crownstone simulators into the core
+            :param crownstones: List of class instances that inherit the CrownstoneCore class
+            :return:
         """
         self.crownstones = crownstones
         for crownstone in self.crownstones:
@@ -53,21 +63,31 @@ class SimulationCore:
         
     def loadBroadcasters(self, broadcasters):
         """
-        This will load the Broadcaster simulators into the core.
-        Broadcasters can be phones, ibeacons, etc. They inherit the BroadcasterCore class
-        :param broadcasters: List of class instances that inherit the BroadcasterCore class
-        :return:
+            This will load the Broadcaster simulators into the core.
+            Broadcasters can be phones, ibeacons, etc. They inherit the BroadcasterCore class
+            :param broadcasters: List of class instances that inherit the BroadcasterCore class
+            :return:
         """
         self.broadcasters = broadcasters
         for broadcaster in self.broadcasters:
             broadcaster.loadEventBus(self.eventBus)
+            
+            
+    def resetSimulatorForResults(self):
+        self.broadcasters = []
+        self.interactionModule = None
+        self.restart()
+        self.loadCrownstones(self.crownstones)
         
+        for crownstone in self.crownstones:
+            crownstone.resetState(resetTrainingData=False)
+
     def start(self, duration, timeStep = 0.01):
         """
         Start simulation
-        :param duration: simulation time in seconds
-        :param timeStep: time step size in milliseconds
-        :return:
+            :param duration: simulation time in seconds
+            :param timeStep: time step size in milliseconds
+            :return:
         """
         for crownstone in self.crownstones:
             crownstone.resetState(True)
@@ -76,7 +96,8 @@ class SimulationCore:
             raise SimulatorException(SimulatorError.USER_INPUT_ERROR, "Invalid Step size. Must be larger than 0.")
         
         self.t = 0
-        while self.t < duration:
+        self.abort = False
+        while self.t < duration and self.abort == False:
             self.tick()
             self.t = self.t + timeStep
     
@@ -91,8 +112,10 @@ class SimulationCore:
             raise SimulatorException(SimulatorError.USER_INPUT_ERROR, "Invalid Step size. Must be larger than 0.")
         
         startT = self.t
+
+        self.abort = False
     
-        while self.t < (startT + duration):
+        while self.t < (startT + duration) and self.abort == False:
             self.tick()
             self.t = self.t + timeStep
     
@@ -140,6 +163,7 @@ class SimulationCore:
                     finished = False
                     break
             if finished:
+                print("Clean up message", mId)
                 self.messages.pop(mId)
                 
     

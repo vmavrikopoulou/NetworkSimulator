@@ -9,7 +9,6 @@ class OverlayModes(Enum):
 class SimOverlays:
     
     gui = None
-    blockSize = 10
     
     height = 1 #m
     
@@ -29,8 +28,8 @@ class SimOverlays:
             
 
     def drawRssiOverlay(self, surface, mWidth, mHeight):
-        xBlockCount = math.ceil(mWidth/self.blockSize)
-        yBlockCount = math.ceil(mHeight/self.blockSize)
+        xBlockCount = math.ceil(mWidth/self.gui.blockSize)
+        yBlockCount = math.ceil(mHeight/self.gui.blockSize)
         
         maxRSSI = -50
         minRSSI = -98
@@ -49,19 +48,19 @@ class SimOverlays:
         
         for i in range(0,xBlockCount):
             for j in range(0,yBlockCount):
-                x,y  = self.gui.xyPxToZeroRefMeters(0.5*self.blockSize + i*self.blockSize, 0.5*self.blockSize + j*self.blockSize)
+                x,y  = self.gui.xyPxToZeroRefMeters(0.5*self.gui.blockSize + i*self.gui.blockSize, 0.5*self.gui.blockSize + j*self.gui.blockSize)
                 
                 rssi = self.gui.simMath.getRssiToCrownstone(targetCrownstone, (x,y))
                 if rssi is not None:
                     color = self.gui.simColorRange.getColor(rssi)
                     
-                    pygame.draw.rect(surface, color, (i*self.blockSize, j*self.blockSize, self.blockSize, self.blockSize))
+                    pygame.draw.rect(surface, color, (i*self.gui.blockSize, j*self.gui.blockSize, self.gui.blockSize, self.gui.blockSize))
 
         return True
 
     def drawGroundTruthOverlay(self, surface, mWidth, mHeight):
-        xBlockCount = math.ceil(mWidth / self.blockSize)
-        yBlockCount = math.ceil(mHeight / self.blockSize)
+        xBlockCount = math.ceil(mWidth / self.gui.blockSize)
+        yBlockCount = math.ceil(mHeight / self.gui.blockSize)
 
         if self.gui.rooms is None:
             return
@@ -74,12 +73,12 @@ class SimOverlays:
                     for corner in room["corners"]:
                         convertedPointList.append(self.gui.xyMetersToPixels(corner))
         
-                    x = i*self.blockSize + 0.5*self.blockSize
-                    y = j*self.blockSize + 0.5*self.blockSize
+                    x = i*self.gui.blockSize + 0.5*self.gui.blockSize
+                    y = j*self.gui.blockSize + 0.5*self.gui.blockSize
                     inRoom = self.gui.simMath.isPointInPath(x,y,convertedPointList)
             
                     if inRoom:
-                        pygame.draw.rect(surface, (room["color"][0],room["color"][1],room["color"][2],80), (i * self.blockSize, j * self.blockSize, self.blockSize, self.blockSize))
+                        pygame.draw.rect(surface, (room["color"][0],room["color"][1],room["color"][2],80), (i * self.gui.blockSize, j * self.gui.blockSize, self.gui.blockSize, self.gui.blockSize))
                         pygame.draw.rect(surface, (0,0,0), (x,y, 1, 1))
     
         return True
