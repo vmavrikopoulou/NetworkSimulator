@@ -45,7 +45,7 @@ class SimulationGui(GuiCore):
     selectedOverlayMode = OverlayModes.DISABLED
     controlMode = ControlModes.SELECT
     
-    state = {}
+    
     
     drawRoomOverlays = False
     drawSimulationCrownstones = True
@@ -58,11 +58,17 @@ class SimulationGui(GuiCore):
     simulator = None
 
     blockSize = 10
-    
+
+    state = {}
     resultMap = {}
+    groundTruthMap = {}
     
     def __init__(self, width = 1280, height = 700):
         super().__init__(width, height)
+        self.state = {}
+        self.resultMap = {}
+        self.groundTruthMap = {}
+        
         self.controlInteraction = SimControlInteraction(self)
         self.interaction = SimInteraction(self)
         self.simMath = SimMath(self)
@@ -115,8 +121,11 @@ class SimulationGui(GuiCore):
         
         self.simulationRunning = True
         
-    def run(self):
+    def initScreen(self):
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
+    
+    def run(self):
+        self.initScreen()
     
         while 1:
             self.render(self.screen)
@@ -346,7 +355,37 @@ class SimulationGui(GuiCore):
         
         return mX, mY
     
-    def getStaticResults(self):
+    
+    def calculateGroundTruthMap(self):
+        self.groundTruthMap = {}
+
+        xBlockCount = math.ceil(self.mapWidth  / self.blockSize)
+        yBlockCount = math.ceil(self.mapHeight / self.blockSize)
+
+        if self.rooms is None:
+            return
+
+        for i in range(0, xBlockCount):
+            x = i * self.blockSize + 0.5 * self.blockSize
+            self.groundTruthMap[x] = {}
+            for j in range(0, yBlockCount):
+                y = j * self.blockSize + 0.5 * self.blockSize
+                self.groundTruthMap[x][y] = None
+                
+                for room in self.rooms:
+                    convertedPointList = []
+                    for corner in room["corners"]:
+                        convertedPointList.append(self.xyMetersToPixels(corner))
+            
+                    x = i * self.blockSize + 0.5 * self.blockSize
+                    y = j * self.blockSize + 0.5 * self.blockSize
+                    inRoom = self.simMath.isPointInPath(x, y, convertedPointList)
+            
+                    if inRoom:
+                        self.groundTruthMap[x][y] = room["id"]
+
+        
+    def getStaticResults(self, render = True):
         self.startSimulation(self.config["trainingPhaseDurationSeconds"])
         xBlockCount = math.ceil(self.mapWidth / self.blockSize)
         yBlockCount = math.ceil(self.mapHeight / self.blockSize)
@@ -380,16 +419,15 @@ class SimulationGui(GuiCore):
                 
                 self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
                 
-            self.render(self.screen)
+            if render:
+                self.render(self.screen)
+            else:
+                print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
 
 
         self.simulator.resetSimulatorForResults()
-                
-                
-                
-                
-                
-                
+
+        
                 
                 
                 

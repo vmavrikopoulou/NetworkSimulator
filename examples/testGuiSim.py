@@ -36,3 +36,13 @@ b.loadCrownstones(simulatorCrownstones)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 a.run()
+
+## running without gui interaction:
+# a.initScreen()
+# a.render(a.screen)
+# a.calculateGroundTruthMap()
+# a.getStaticResults(False)
+# #
+# # results live in:
+# print(a.resultMap)
+# print(a.groundTruthMap)
