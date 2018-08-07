@@ -34,8 +34,8 @@ class SimColorRange:
             pygame.draw.rect(rangeSurface, self.getColor(value), (0, round(rHeight / self.stepCount) * i + 10, 30, blockHeight))
 
         for i in range(0, self.stepCount + 3):
-            j = self.stepCount - 1 - i
-            value = self.startRange + ((valueRange / (self.stepCount-1)) * j)
+            j = self.stepCount - i
+            value = self.startRange + ((valueRange / self.stepCount) * j)
             self.gui.text(rangeSurface, "{:3.3f}".format(value), (255, 255, 255), (35, blockHeight * i))
         
         self.gui.createClickableArea(pos, 50, rHeight, self.changeColorScheme)

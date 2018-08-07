@@ -26,3 +26,6 @@ class CrownstoneCore:
     
     def tick(self, time):
         pass
+    
+    def getResult(self, roomId):
+        self.eventBus.emit(Topics.gotResult, {"sender": self.id, "roomId": roomId})

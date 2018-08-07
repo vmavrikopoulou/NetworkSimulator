@@ -45,10 +45,8 @@ class SimulationGui(GuiCore):
     
     state = {}
     
-    drawRoomOverlays = True
-    drawSourceCrownstones = True
+    drawRoomOverlays = False
     drawSimulationCrownstones = True
-    drawSourceBeacons = True
     drawUserPath = True
     drawUserPathTimes = True
     drawUser = True
@@ -314,6 +312,9 @@ class SimulationGui(GuiCore):
         mY = y / self.scaleFactor - self.pY - self.mapData["zeroPoint"][1]
         
         return mX, mY
+    
+    def drawGroundTruth(self):
+        pass
     
     
     

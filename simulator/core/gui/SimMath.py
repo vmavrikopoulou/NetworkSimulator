@@ -19,7 +19,6 @@ class SimMath:
         distance = self._getDistance({"x":crownstone.pos[0], "y":crownstone.pos[1]}, sourcePos)
         rssiCalibration = self.gui.config["rssiCalibration"]
         NValue = self.gui.config["nValue"]
-
         return self._getRSSI(rssiCalibration, NValue, distance)
 
 
@@ -42,7 +41,24 @@ class SimMath:
     def _getRSSI(self, calibration, NValue, distance):
         rssiMean = calibration - (10 * NValue) * math.log10(distance)
         # rssi = numpy.random.normal(rssiMean, std)
-        if rssiMean < -self.gui.config["rssiMinimum"]:
+        if rssiMean < self.gui.config["rssiMinimum"]:
             return None
         
         return rssiMean
+
+    def isPointInPath(self, x, y, poly):
+        """
+        x, y -- x and y coordinates of point
+        poly -- a list of tuples [(x, y), (x, y), ...]
+        """
+        num = len(poly)
+        i = 0
+        j = num - 1
+        c = False
+        for i in range(num):
+            if ((poly[i][1] > y) != (poly[j][1] > y)) and \
+                    (x < poly[i][0] + (poly[j][0] - poly[i][0]) * (y - poly[i][1]) /
+                     (poly[j][1] - poly[i][1])):
+                c = not c
+            j = i
+        return c
