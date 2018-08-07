@@ -5,7 +5,7 @@ from simulator.topics.Topics import Topics
 class GuiCrownstoneCore(CrownstoneCore):
     pos = None
     
-    def __init__(self, id, x, y, z):
+    def __init__(self, id, x, y):
         super().__init__(id)
-        self.pos = (x,y,z)
+        self.pos = (x,y)
         

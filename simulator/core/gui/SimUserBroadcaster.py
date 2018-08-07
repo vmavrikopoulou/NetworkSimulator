@@ -24,6 +24,7 @@ class SimUserBroadcaster(BroadcasterCore):
         targetCrownstone = self.gui.simulatorCrownstonesMap[targetCrownstoneId]
         # calculate position of user
         rssi = self.gui.simMath.getRssiToPosition(targetCrownstone.pos, self.pos)
+        
         return rssi
         
     def tick(self, simulationTime):

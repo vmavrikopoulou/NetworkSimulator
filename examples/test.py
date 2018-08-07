@@ -46,9 +46,7 @@ beacon3.setTargetParameters({
     "crownstone3": {"mean": -50, "std": 6},
 })
 
-beacons = [beacon1, beacon2, beacon3];
-
-
+beacons = [beacon1, beacon2, beacon3]
 
 # create a simulator
 mySimulation = Simulator()

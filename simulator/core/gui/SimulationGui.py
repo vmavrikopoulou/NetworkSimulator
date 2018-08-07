@@ -28,11 +28,9 @@ class SimulationGui(GuiCore):
     mapHeight = None
     
     mapData = None
-    crownstones = None
     simulatorCrownstones = None
     simulatorCrownstonesMap = {}
     userData = None
-    beacons = None
     rooms = None
     config = None
 
@@ -77,8 +75,6 @@ class SimulationGui(GuiCore):
         self.simulator = simulator
         self.simulator.changeEventBus(SimulationEventBus)
      
-    def loadCrownstones(self, crownstones):
-        self.crownstones = crownstones
 
     def loadSimulatorCrownstones(self, simulatorCrownstones):
         self.simulatorCrownstones = simulatorCrownstones
@@ -92,9 +88,6 @@ class SimulationGui(GuiCore):
         
     def loadConfig(self, config):
         self.config = config
-     
-    def loadBeacons(self, beacons):
-        self.beacons = beacons
      
     def loadRooms(self, rooms):
         self.rooms = rooms
@@ -119,8 +112,6 @@ class SimulationGui(GuiCore):
     def run(self):
         screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
     
-        self.simMath.processNValues()
-    
         while 1:
             self.prepareForRender()
             
@@ -132,7 +123,7 @@ class SimulationGui(GuiCore):
                 self.simColorRange.draw(screen,(self.width - 650, 10))
             
             if self.simulationRunning:
-                time.sleep(0.001)
+                time.sleep(0.0001)
             else:
                 time.sleep(0.01)
 
@@ -170,15 +161,9 @@ class SimulationGui(GuiCore):
             overviewSurface.blit(roomOverviewSurface,(0,0))
         self.drawMap(overviewSurface,mWidth,mHeight)
         
-        if self.drawSourceCrownstones:
-            self.drawCrownstones(overviewSurface, (self.mapPadding, self.mapPadding))
-            
         if self.drawSimulationCrownstones:
             self.drawSimCrownstones(overviewSurface, (self.mapPadding, self.mapPadding))
             
-        if self.drawSourceBeacons:
-            self.drawBeacons(overviewSurface, (self.mapPadding, self.mapPadding))
-        
         if self.drawUserPath:
             self.drawPath(overviewSurface)
         
@@ -286,16 +271,6 @@ class SimulationGui(GuiCore):
             zeroPos = self.xyMetersToPixels(m["zeroPoint"])
             self.drawAaCircle(surf, zeroPos, 8, (255, 0, 0))
 
-    def drawCrownstones(self, surf, offset):
-        for crownstone in self.crownstones:
-            posInM = (self.mapData["zeroPoint"][0] + crownstone["x"], self.mapData["zeroPoint"][1] + crownstone["y"])
-            
-            pos = self.xyMetersToPixels(posInM)
-            
-            cid = crownstone["id"]
-            # lambda cid=cid: func(cid) is used to lock the value of cid in this loop to the lambda function.
-            self.createClickableCircle(pos, 10, lambda cid=cid: self.interaction.handleCrownstoneClick(cid), offset)
-            self.drawAaCircle(surf, pos, 10, (255, 0, 255))
 
     def drawSimCrownstones(self, surf, offset):
         if self.simulatorCrownstones is None:
@@ -311,12 +286,6 @@ class SimulationGui(GuiCore):
             self.createClickableCircle(pos, 10, lambda cid=cid: self.interaction.handleCrownstoneClick(cid), offset)
             self.drawAaCircle(surf, pos, 10, (0, 100, 255))
             
-    def drawBeacons(self, surf, offset):
-        for beacon in self.beacons:
-            posInM = (self.mapData["zeroPoint"][0] + beacon["x"], self.mapData["zeroPoint"][1] + beacon["y"])
-            pos = self.xyMetersToPixels(posInM)
-
-            self.drawAaCircle(surf, pos, 5, (0,255,0))
             
     def xyPixelsToMeters(self, posVector):
         """
@@ -337,7 +306,8 @@ class SimulationGui(GuiCore):
     def xyPxToZeroRefMeters(self, x, y):
         """
         Convert a position in pixels to a position in meters relative to the zero point on the map
-        :param posVector:
+        :param x:
+        :param y:
         :return:
         """
         mX = x / self.scaleFactor - self.pX - self.mapData["zeroPoint"][0]

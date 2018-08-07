@@ -10,8 +10,8 @@ class CrownstoneCore:
         self.id = id
         
     def setTime(self, time):
-        self.time = time;
-        
+        self.time = time
+
     def loadEventBus(self, eventBus):
         self.eventBus = eventBus
     

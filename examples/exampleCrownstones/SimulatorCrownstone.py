@@ -4,8 +4,8 @@ from simulator.simulatorBases.GuiCrownstoneCore import GuiCrownstoneCore
 
 class SimulatorCrownstone(GuiCrownstoneCore):
     
-    def __init__(self, id, x, y, z):
-        super().__init__(id=id,x=x,y=y,z=z)
+    def __init__(self, id, x, y):
+        super().__init__(id=id,x=x,y=y)
        
     # overloaded
     def receiveMessage(self, data):

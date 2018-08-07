@@ -155,40 +155,11 @@ class SimControlPanels:
     
         drawHeight += 30
     
-        self.gui.createButton(
-            screen,
-            "Show NValues",
-            self.gui.selectedOverlayMode == OverlayModes.NVALUE,
-            (self.gui.width - 300, drawHeight),
-            self.gui.controlInteraction.toggleNValueOverlay
-        )
-    
-        drawHeight += 60
-    
-        self.gui.createButton(
-            screen,
-            "Show RSSI Calibration",
-            self.gui.selectedOverlayMode == OverlayModes.RSSI_CALIBRATION,
-            (self.gui.width - 300, drawHeight),
-            self.gui.controlInteraction.toggleRSSICalibrationOverlay
-        )
-    
-        drawHeight += 60
-    
         self.gui.text(screen, "Selected Crownstone:", (255, 255, 255), (self.gui.width - 300, drawHeight))
         drawHeight += 20
         if self.gui.selectedCrownstone is not None:
             self.gui.text(screen, str(self.gui.selectedCrownstone), (255, 255, 255), (self.gui.width - 250, drawHeight))
             drawHeight += 40
-            self.gui.createButton(
-                screen,
-                "Show STD",
-                self.gui.selectedOverlayMode == OverlayModes.STD,
-                (self.gui.width - 300, drawHeight),
-                self.gui.controlInteraction.toggleSTDOverlay
-            )
-        
-            drawHeight += 60
         
             self.gui.createButton(
                 screen,
@@ -222,13 +193,9 @@ class SimControlPanels:
             self.gui.controlInteraction.controlSelectMode
         )
         
-        
-
-
-
 
     def drawViewToggles(self,screen):
-        drawHeight = self.gui.height - 370
+        drawHeight = self.gui.height - 270
         sideDistance = 650
         self.gui.text(screen, "Draw Options:", (255, 255, 255), (self.gui.width - sideDistance, drawHeight), True)
 
@@ -246,30 +213,10 @@ class SimControlPanels:
 
         self.gui.createSmallButton(
             screen,
-            "Source Crownstones",
-            self.gui.drawSourceCrownstones,
-            (self.gui.width - sideDistance, drawHeight),
-            self.gui.controlInteraction.toggleDrawSourceCrownstones
-        )
-
-        drawHeight += 50
-
-        self.gui.createSmallButton(
-            screen,
             "Simulation Crownstones",
             self.gui.drawSimulationCrownstones,
             (self.gui.width - sideDistance, drawHeight),
             self.gui.controlInteraction.toggleDrawSimulationCrownstones
-        )
-
-        drawHeight += 50
-
-        self.gui.createSmallButton(
-            screen,
-            "Source Beacons",
-            self.gui.drawSourceBeacons,
-            (self.gui.width - sideDistance, drawHeight),
-            self.gui.controlInteraction.toggleDrawSourceBeacons
         )
 
         drawHeight += 50
