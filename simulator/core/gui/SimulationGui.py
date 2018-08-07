@@ -53,7 +53,7 @@ class SimulationGui(GuiCore):
     
     simulator = None
     
-    def __init__(self, width = 1400, height = 800):
+    def __init__(self, width = 1280, height = 700):
         super().__init__(width, height)
         self.controlInteraction = SimControlInteraction(self)
         self.interaction = SimInteraction(self)
@@ -97,7 +97,7 @@ class SimulationGui(GuiCore):
         
         self.simulator.loadBroadcasters([self.userBroadcaster])
         if duration is None:
-            duration = self.config["simulationEndTimeS"]
+            duration = self.config["simulationPredefinedEndpoint"]
         self.simulator.start(duration)
         self.simulationStarted = True
 

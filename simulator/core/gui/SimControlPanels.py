@@ -90,10 +90,10 @@ class SimControlPanels:
 
         self.gui.createButton(
             screen,
-            "Simulate 5 seconds",
+            "Simulate " + str(self.gui.config["simulationBatchTimeStepSizeSeconds"]) + " seconds",
             False,
             (self.gui.width - 300, drawHeight),
-            self.gui.controlInteraction.simulate5Seconds
+            self.gui.controlInteraction.simulateNSeconds
         )
 
         drawHeight += 60

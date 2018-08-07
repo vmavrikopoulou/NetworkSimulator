@@ -25,10 +25,7 @@ class SimOverlays:
         
         if self.gui.selectedOverlayMode == OverlayModes.RSSI:
             return self.drawRssiOverlay(surface, mWidth, mHeight)
-
-        
-        
-            
+   
             
 
     def drawRssiOverlay(self, surface, mWidth, mHeight):

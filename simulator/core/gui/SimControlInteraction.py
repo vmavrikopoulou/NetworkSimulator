@@ -71,8 +71,8 @@ class SimControlInteraction:
     def startSimulation(self):
         self.gui.startSimulation()
         
-    def simulate5Seconds(self):
-        self.gui.simulator.continueSimulation(5)
+    def simulateNSeconds(self):
+        self.gui.simulator.continueSimulation(self.gui.config["simulationBatchTimeStepSizeSeconds"])
         
     def runSimulation(self):
         self.gui.runSimulation()
