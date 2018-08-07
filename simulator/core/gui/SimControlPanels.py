@@ -114,8 +114,28 @@ class SimControlPanels:
                 (self.gui.width - 300, drawHeight),
                 self.gui.controlInteraction.stopSimulation
             )
-        
 
+        drawHeight += 60
+
+        self.gui.createButton(
+            screen,
+            "Get Static Results",
+            False,
+            (self.gui.width - 300, drawHeight),
+            self.gui.controlInteraction.getStaticResults
+        )
+
+        drawHeight += 60
+        
+        # self.gui.createButton(
+        #     screen,
+        #     "Get Dynamic Results",
+        #     False,
+        #     (self.gui.width - 300, drawHeight),
+        #     self.gui.controlInteraction.getDynamicResults
+        # )
+        #
+        # drawHeight += 60
         
         self.drawBackButton(screen)
         

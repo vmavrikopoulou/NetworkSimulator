@@ -69,6 +69,9 @@ class SimulationCore:
         :param timeStep: time step size in milliseconds
         :return:
         """
+        for crownstone in self.crownstones:
+            crownstone.resetState(True)
+        
         if timeStep <= 0:
             raise SimulatorException(SimulatorError.USER_INPUT_ERROR, "Invalid Step size. Must be larger than 0.")
         

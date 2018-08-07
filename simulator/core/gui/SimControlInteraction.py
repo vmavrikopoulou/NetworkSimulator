@@ -79,5 +79,10 @@ class SimControlInteraction:
         
     def stopSimulation(self):
         self.gui.simulationRunning = False
-        
-        
+
+    def getStaticResults(self):
+        pass
+
+    def getDynamicResults(self):
+        pass
+
