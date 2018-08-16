@@ -120,9 +120,18 @@ class SimControlPanels:
         self.gui.createButton(
             screen,
             "Get Static Results",
-            False,
+            self.gui.collectingStaticResults,
             (self.gui.width - 300, drawHeight),
             self.gui.controlInteraction.getStaticResults
+        )
+
+        drawHeight += 60
+        self.gui.createButton(
+            screen,
+            "Do Single Static Run",
+            self.gui.collectingStaticResults,
+            (self.gui.width - 300, drawHeight),
+            self.gui.controlInteraction.doSingleStaticRun
         )
 
         drawHeight += 60

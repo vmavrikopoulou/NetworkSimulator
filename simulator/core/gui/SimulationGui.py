@@ -39,6 +39,7 @@ class SimulationGui(GuiCore):
     userBroadcaster = None
     simulationRunning = False
     simulationStarted = False
+    collectingStaticResults = False
     
     
     selectedCrownstone = None
@@ -386,6 +387,9 @@ class SimulationGui(GuiCore):
 
         
     def getStaticResults(self, render = True):
+        self.collectingStaticResults = True
+        
+        
         self.startSimulation(self.config["trainingPhaseDurationSeconds"])
         xBlockCount = math.ceil(self.mapWidth / self.blockSize)
         yBlockCount = math.ceil(self.mapHeight / self.blockSize)
@@ -419,13 +423,65 @@ class SimulationGui(GuiCore):
                 
                 self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
                 
-            if render:
-                self.render(self.screen)
-            else:
-                print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
+                if render:
+                    self.render(self.screen)
+                else:
+                    print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
 
 
         self.simulator.resetSimulatorForResults()
+        self.collectingStaticResults = False
+        
+        
+
+    def doSingleStaticRun(self, render = True):
+        self.collectingStaticResults = True
+        self.startSimulation(self.config["trainingPhaseDurationSeconds"])
+        xBlockCount = math.ceil(self.mapWidth / self.blockSize)
+        yBlockCount = math.ceil(self.mapHeight / self.blockSize)
+
+        self.resultMap = {}
+        
+        if self.rooms is None:
+            return
+        
+        i = round(0.5*xBlockCount)
+        j = round(0.5*yBlockCount)
+        
+        x = i * self.blockSize + 0.5 * self.blockSize
+        self.resultMap[x] = {}
+        y = j * self.blockSize + 0.5 * self.blockSize
+
+        self.resultMap[x][y] = None
+        posInMeters = self.xyPxToZeroRefMeters(x,y)
+
+        self.simulator.resetSimulatorForResults()
+        # fake a user at this point
+        resultBroadcaster = SimResultBroadcaster(self.userData["address"], posInMeters, self)
+        resultBroadcaster.setBroadcastParameters(intervalMs=self.userData["intervalMs"], payload=self.userData["payload"])
+
+        self.simulator.loadBroadcasters([resultBroadcaster])
+        
+        def drawResult(roomId):
+            # store results
+            self.resultMap[x][y] = roomId
+            
+        self.simulator.eventBus.subscribe(Topics.gotResult, { lambda data: drawResult(data["roomId"]) })
+        
+        self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
+        
+        if render:
+            self.render(self.screen)
+        else:
+            print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
+
+
+        self.simulator.resetSimulatorForResults()
+        self.collectingStaticResults = False
+        
+        
+
+    
 
         
                 
