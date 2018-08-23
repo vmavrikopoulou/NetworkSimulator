@@ -163,7 +163,7 @@ class SimulationCore:
                     finished = False
                     break
             if finished:
-                print("Clean up message", mId)
+                # print("Clean up message", mId)
                 self.messages.pop(mId)
                 
     
