@@ -35,9 +35,12 @@ a.loadRooms(rooms)
 b = Simulator()
 b.loadInteractionModule(interactionModule)
 b.loadCrownstones(simulatorCrownstones)
+b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-a.run()
+# a.run()
+a.startSimulation(2)
+
 
 ## running without gui interaction:
 # a.initScreen()

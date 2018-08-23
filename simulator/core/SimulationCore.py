@@ -14,6 +14,7 @@ class SimulationCore:
         self.eventBus = None
     
         self.guiMode = None
+        self.config = None
     
         self.messages = {}
     
@@ -28,19 +29,24 @@ class SimulationCore:
         
         newEventBus = EventBus()
         self.changeEventBus(newEventBus)
-        self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
-        self.eventBus.subscribe(Topics.gotResult, self._abortSimulation)
 
     def _abortSimulation(self, data):
         self.abort = True
 
+    def loadConfig(self, config):
+        self.config = config
+
     def changeEventBus(self, eventBus):
         self.eventBus = eventBus
+        
         for crownstone in self.crownstones:
             crownstone.loadEventBus(self.eventBus)
-
+            
         for broadcaster in self.broadcasters:
             broadcaster.loadEventBus(self.eventBus)
+
+        self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
+        self.eventBus.subscribe(Topics.gotResult, self._abortSimulation)
     
     def loadInteractionModule(self, interactionModule):
         """
@@ -180,7 +186,7 @@ class SimulationCore:
         # senderId = message["sender"]
         # sender = self.crownstones[]
         # receiverId = receiver.id
-        #
+
         # rssi =
         
         
@@ -192,6 +198,7 @@ class SimulationCore:
     
     
     def _collectMessage(self, messageData):
+        print("HAVE MESSAGE", messageData)
         messageId = str(uuid.uuid4())
         self.messages[messageId] = {
             "payload": messageData["payload"],
@@ -201,7 +208,8 @@ class SimulationCore:
         }
     
     
-    
+    def _getRssiBetweenCrownstones(self, crownstone1, crownstone2):
+        return -60
     
     
     
