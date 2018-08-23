@@ -3,7 +3,6 @@ from simulator.core.gui.SimOverlays import OverlayModes
 
 
 class SimControlInteraction:
-    gui = None
     
     def __init__(self, simulationGui):
         self.gui = simulationGui

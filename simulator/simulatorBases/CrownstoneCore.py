@@ -2,12 +2,10 @@ from simulator.topics.Topics import Topics
 
 
 class CrownstoneCore:
-    id = None
-    eventBus = None
-    time = 0
-    
     def __init__(self, id):
         self.id = id
+        self.eventBus = None
+        self.time = 0
         
     def setTime(self, time):
         self.time = time

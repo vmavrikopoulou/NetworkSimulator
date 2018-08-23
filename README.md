@@ -65,7 +65,7 @@ your behaviour.
 >```{"sender": < id >, "payload": < data >}```
 
 
-> ##### receiveMessage(data: any)
+> ##### receiveMessage(data: any, rssi: number)
 > When mesh messages are received, this method is called. You can overload it to use it.
  The format of the message is:
 >

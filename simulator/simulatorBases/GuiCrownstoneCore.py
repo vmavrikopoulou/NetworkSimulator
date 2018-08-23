@@ -3,7 +3,6 @@ from simulator.topics.Topics import Topics
 
 
 class GuiCrownstoneCore(CrownstoneCore):
-    pos = None
     
     def __init__(self, id, x, y):
         super().__init__(id)

@@ -5,22 +5,22 @@ from simulator.util.EventBus import EventBus
 import uuid
 
 class SimulationCore:
-    interactionModule = None
-    crownstones = []
-    broadcasters = []
-    
-    eventBus = None
-    
-    guiMode = None
-    
-    messages = {}
-    
-    t = 0 # time in seconds
-    abort = False
     
     def __init__(self):
+        self.interactionModule = None
+        self.crownstones = []
+        self.broadcasters = []
+    
+        self.eventBus = None
+    
+        self.guiMode = None
+    
+        self.messages = {}
+    
+        self.t = 0  # time in seconds
+        self.abort = False
+        
         self.restart()
-
 
     def restart(self):
         if self.eventBus is not None:
@@ -176,6 +176,14 @@ class SimulationCore:
         :param receiver:
         :return:
         """
+        
+        # senderId = message["sender"]
+        # sender = self.crownstones[]
+        # receiverId = receiver.id
+        #
+        # rssi =
+        
+        
         if message["sender"] == receiver.id:
             return MessageState.SKIPPED
         

@@ -3,10 +3,10 @@ from simulator.topics.Topics import Topics
 
 
 class InteractionCore:
-    eventBus = None
-    name = "USER"
+    
     
     def __init__(self, name = "USER"):
+        self.eventBus = None
         self.name = name
     
     def loadEventBus(self, eventBus):

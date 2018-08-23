@@ -1,8 +1,6 @@
 import uuid
 
 class EventBus:
-    topics = {}
-    subscriberIds = {}
     
     def __init__(self):
         self.topics = {}

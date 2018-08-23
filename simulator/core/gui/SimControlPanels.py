@@ -13,10 +13,7 @@ class ControlModes(Enum):
     
 class SimControlPanels:
     
-    gui = None
     blockSize = 10
-    
-    height = 1 #m
     
     def __init__(self, gui):
         self.gui = gui

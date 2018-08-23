@@ -5,18 +5,16 @@ import math, time
 
 
 class SimUserBroadcaster(BroadcasterCore):
-    path = None
-    
-    pathIndex = 0
-    pathTime = 0
-    
-    pathFinished = False
-    
-    pos = [0,0]
     
     def __init__(self, address, gui):
         super().__init__(address="address")
         self.gui = gui
+        self.path = None
+
+        self.pathIndex = 0
+        self.pathTime = 0
+
+        self.pathFinished = False
         self.pos = [self.gui.simUserMovement.path[0][0],self.gui.simUserMovement.path[0][1]]
     
     def getRssiToCrownstone(self, targetCrownstoneId):

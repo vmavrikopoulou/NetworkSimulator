@@ -3,16 +3,13 @@ import random
 
 class BroadcasterCore:
     
-    address = None
-    intervalMs = None
-    payload = None
-    
-    eventBus = None
-    willBroadcastMessage = False
-    
-    timeLastBroadcast = 0
     
     def __init__(self, address):
+        self.intervalMs = None
+        self.payload = None
+        self.eventBus = None
+        self.willBroadcastMessage = False
+        
         self.timeLastBroadcast = random.random()
         self.address = address
 

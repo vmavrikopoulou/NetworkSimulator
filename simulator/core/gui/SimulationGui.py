@@ -18,54 +18,49 @@ from simulator.topics.Topics import Topics
 
 
 class SimulationGui(GuiCore):
-    width = 1600
-    height = 800
-    
-    pX = 0
-    pY = 0
-    scaleFactor = 1
-    mapPadding = 10
-    mapOffset = None
-    mapWidth = None
-    mapHeight = None
-    
-    mapData = None
-    simulatorCrownstones = None
-    simulatorCrownstonesMap = {}
-    userData = None
-    rooms = None
-    config = None
-
-    userBroadcaster = None
-    simulationRunning = False
-    simulationStarted = False
-    collectingStaticResults = False
-    
-    
-    selectedCrownstone = None
-    selectedOverlayMode = OverlayModes.DISABLED
-    controlMode = ControlModes.SELECT
-    
-    
-    
-    drawRoomOverlays = False
-    drawSimulationCrownstones = True
-    drawUserPath = True
-    drawUserPathTimes = True
-    drawUser = True
-    
-    screen = None
-    
-    simulator = None
-
-    blockSize = 10
-
-    state = {}
-    resultMap = {}
-    groundTruthMap = {}
     
     def __init__(self, width = 1280, height = 700):
         super().__init__(width, height)
+        self.width = 1600
+        self.height = 800
+
+        self.pX = 0
+        self.pY = 0
+        self.scaleFactor = 1
+        self.mapPadding = 10
+        self.mapOffset = None
+        self.mapWidth = None
+        self.mapHeight = None
+
+        self.mapData = None
+        self.simulatorCrownstones = None
+        self.simulatorCrownstonesMap = {}
+        self.userData = None
+        self.rooms = None
+        self.config = None
+
+        self.userBroadcaster = None
+        self.simulationRunning = False
+        self.simulationStarted = False
+        self.collectingStaticResults = False
+
+        self.selectedCrownstone = None
+        self.selectedOverlayMode = OverlayModes.DISABLED
+        self.controlMode = ControlModes.SELECT
+
+        self.drawRoomOverlays = False
+        self.drawSimulationCrownstones = True
+        self.drawUserPath = True
+        self.drawUserPathTimes = True
+        self.drawUser = True
+
+        self.screen = None
+
+        self.simulator = None
+
+        self.blockSize = 10
+
+        
         self.state = {}
         self.resultMap = {}
         self.groundTruthMap = {}

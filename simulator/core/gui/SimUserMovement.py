@@ -5,12 +5,10 @@ import datetime
 
 class SimUserMovement:
     
-    gui = None
-    path = []
-    
     def __init__(self, gui):
         self.gui = gui
-
+        self.path = []
+        
         SimulationEventBus.subscribe(GuiTopics.mousePress, self._handleMousePress)
         SimulationEventBus.subscribe(GuiTopics.keyPress, self._handleKeyPress)
         

@@ -8,17 +8,17 @@ class ColorSchemes(Enum):
     GRAY_RED = "GRAY_RED"
 
 class SimColorRange:
-    blockSize = 10
     
-    startRange = 0
-    endRange = 10
-    stepCount = 10
-    
-    colorScheme = ColorSchemes.BLUE_RED
-    
-    gui = None
     
     def __init__(self, gui):
+        self.blockSize = 10
+    
+        self.startRange = 0
+        self.endRange = 10
+        self.stepCount = 10
+   
+        self.colorScheme = ColorSchemes.BLUE_RED
+        
         self.gui = gui
 
     def draw(self, screen, pos):

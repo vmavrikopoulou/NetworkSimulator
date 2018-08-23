@@ -2,14 +2,14 @@
 # it does not have to do anything other than be imported.
 from util import path
 
-from examples.exampleCrownstones.SimulatorCrownstone import SimulatorCrownstone
-from examples.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
+from examples.originalExample.exampleCrownstones.SimulatorCrownstone import SimulatorCrownstone
+from examples.originalExample.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
 from simulator import SimulationGui, JsonFileStore, Simulator
 
-mapData = JsonFileStore('./maps/officesExample.json').getData()
-config = JsonFileStore('./maps/config.json').getData()
-rooms = JsonFileStore('./maps/roomOverlay.json').getData()
-userModule = JsonFileStore('./maps/userData.json').getData()
+mapData = JsonFileStore('./originalExample/maps/officesExample.json').getData()
+config = JsonFileStore('./originalExample/maps/config.json').getData()
+rooms = JsonFileStore('./originalExample/maps/roomOverlay.json').getData()
+userModule = JsonFileStore('./originalExample/maps/userData.json').getData()
 
 
 # SimulationCrownstones are not perse real Crownstones. These are points to which the rssi's will be calculated.
@@ -19,6 +19,8 @@ simulatorCrownstones = [
     SimulatorCrownstone("crownstone2", -10,  0), # X, Y positions in meters relative to zeroPoint on Map
     SimulatorCrownstone("crownstone3", -5,   5), # X, Y positions in meters relative to zeroPoint on Map
 ]
+
+#mesh topology
 
 # create a custom interaction module
 interactionModule = TrainingAndTesting("Victoria")
@@ -41,7 +43,7 @@ a.run()
 # a.initScreen()
 # a.render(a.screen)
 # a.calculateGroundTruthMap()
-# a.getStaticResults(False)
+# a.doSingleStaticRun(False)
 # #
 # # results live in:
 # print(a.resultMap)

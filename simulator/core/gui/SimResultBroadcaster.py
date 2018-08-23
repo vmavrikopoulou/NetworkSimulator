@@ -6,8 +6,6 @@ import math, time
 
 class SimResultBroadcaster(BroadcasterCore):
     
-    pos = [0, 0]
-    
     def __init__(self, address, pos, gui):
         super().__init__(address=address)
         self.gui = gui

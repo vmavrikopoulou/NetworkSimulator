@@ -8,10 +8,6 @@ class OverlayModes(Enum):
     
 class SimOverlays:
     
-    gui = None
-    
-    height = 1 #m
-    
     def __init__(self, gui):
         self.gui = gui
         

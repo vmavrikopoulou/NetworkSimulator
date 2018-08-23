@@ -14,12 +14,11 @@ class SimMath:
         return math.sqrt(dx ** 2 + dy ** 2)
 
 
-
     def getRssiToCrownstone(self, crownstone, sourcePos):
         distance = self._getDistance({"x":crownstone.pos[0], "y":crownstone.pos[1]}, sourcePos)
         rssiCalibration = self.gui.config["rssiCalibration"]
         NValue = self.gui.config["nValue"]
-        return self._getRSSI(rssiCalibration, NValue, distance)
+        return self._getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
 
 
     def getRssiToPosition(self, targetPos, sourcePos):
@@ -36,12 +35,12 @@ class SimMath:
         rssiCalibration = self.gui.config["rssiCalibration"]
         NValue = self.gui.config["nValue"]
     
-        return self._getRSSI(rssiCalibration, NValue, distance)
+        return self._getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
     
-    def _getRSSI(self, calibration, NValue, distance):
+    def _getRSSI(self, calibration, NValue, distance, minRssi):
         rssiMean = calibration - (10 * NValue) * math.log10(distance)
         # rssi = numpy.random.normal(rssiMean, std)
-        if rssiMean < self.gui.config["rssiMinimum"]:
+        if rssiMean < minRssi:
             return None
         
         return rssiMean

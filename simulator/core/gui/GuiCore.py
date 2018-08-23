@@ -10,14 +10,14 @@ SimulationEventBus = EventBus()
 
 class GuiCore:
     
-    clickableAreas = None
-    
-    mouseDown = False
-    timeMouseDown = 0
-    
-    fonts = {}
-    
     def __init__(self, width, height):
+        self.clickableAreas = None
+
+        self.mouseDown = False
+        self.timeMouseDown = 0
+    
+        self.fonts = {}
+        
         self.width  = width
         self.height = height
         pygame.init()
