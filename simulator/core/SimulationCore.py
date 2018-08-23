@@ -198,7 +198,6 @@ class SimulationCore:
     
     
     def _collectMessage(self, messageData):
-        print("HAVE MESSAGE", messageData)
         messageId = str(uuid.uuid4())
         self.messages[messageId] = {
             "payload": messageData["payload"],
