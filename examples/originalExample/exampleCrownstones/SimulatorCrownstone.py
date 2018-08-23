@@ -32,10 +32,12 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     def newMeasurement(self, data, rssi):
         """
             This is where scanned ble devices are seen
-            :param data:  { "address":string, "payload": dictionary, "rssi": number }
+            :param data:  { "address":string, "payload": dictionary }
         """
         print(self.time, self.id, "Scans indicate", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
         
         if rssi > -45:
             self.sendMessage("I saw a beacon with more that -45 dB!" + str(rssi) + "   " + str(self.time))
+
+        self.sendMessage("I measured something" + str(rssi) + "   " + str(self.time))
             

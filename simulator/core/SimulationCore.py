@@ -36,6 +36,7 @@ class SimulationCore:
         self.abort = True
 
     def loadConfig(self, config):
+        print("config", config)
         self.config = config
 
     def changeEventBus(self, eventBus):
@@ -188,9 +189,11 @@ class SimulationCore:
         :return:
         """
         
+        receiverId = receiver.id
+        if message["sender"] == receiverId:
+            return MessageState.SKIPPED
         
         senderId = message["sender"]
-        receiverId = receiver.id
         rssi = None
         if senderId in self.crownstoneMap:
             sender = self.crownstones[self.crownstoneMap[senderId]]
@@ -204,8 +207,7 @@ class SimulationCore:
         # return MessageState.DELAYED
         ##
         
-        if message["sender"] == receiverId:
-            return MessageState.SKIPPED
+        
         
         receiver.receiveMessage(message, rssi)
         return MessageState.DELIVERED

@@ -75,7 +75,7 @@ your behaviour.
 > ##### newMeasurement(data: any, rssi: int)
 > When broadcasters reach this Crownstone, this method is calld. The format of the incoming data is:
 >
->```{"address": < address of broadcaster >, "payload": < data >, "rssi": int}```
+>```{"address": < address of broadcaster >, "payload": < data >}```
 
 
 ### Step 3. The Broadcaster Classes

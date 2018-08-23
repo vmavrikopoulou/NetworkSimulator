@@ -65,6 +65,7 @@ class SimMath:
 
     @staticmethod
     def getRSSI(calibration, NValue, distance, minRssi):
+        print(distance)
         rssiMean = calibration - (10 * NValue) * math.log10(distance)
         # rssi = numpy.random.normal(rssiMean, std)
         if rssiMean < minRssi:
