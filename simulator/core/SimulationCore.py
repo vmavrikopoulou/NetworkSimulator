@@ -31,7 +31,7 @@ class SimulationCore:
         self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
         self.eventBus.subscribe(Topics.gotResult, self._abortSimulation)
 
-    def _abortSimulation(self):
+    def _abortSimulation(self, data):
         self.abort = True
 
     def changeEventBus(self, eventBus):
