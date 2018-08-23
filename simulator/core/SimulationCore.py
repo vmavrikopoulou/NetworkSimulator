@@ -197,16 +197,14 @@ class SimulationCore:
         rssi = None
         if senderId in self.crownstoneMap:
             sender = self.crownstones[self.crownstoneMap[senderId]]
-    
+            
             rssi = self._getRssiBetweenCrownstones(sender,receiver)
-        
         
         ##
         # HERE we can put code that checks topology, then sets the expected time of arrival and compares this with the current time
         # If it is delayed, we will return:
         # return MessageState.DELAYED
         ##
-        
         
         
         receiver.receiveMessage(message, rssi)
