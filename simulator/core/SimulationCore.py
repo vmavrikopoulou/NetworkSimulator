@@ -1,4 +1,5 @@
 from simulator.Exceptions import SimulatorException, SimulatorError
+from simulator.core.gui.SimMath import SimMath
 from simulator.topics.Topics import Topics
 from simulator.util.Enums import MessageState
 from simulator.util.EventBus import EventBus
@@ -9,6 +10,7 @@ class SimulationCore:
     def __init__(self):
         self.interactionModule = None
         self.crownstones = []
+        self.crownstoneMap = {}
         self.broadcasters = []
     
         self.eventBus = None
@@ -64,7 +66,10 @@ class SimulationCore:
             :return:
         """
         self.crownstones = crownstones
+        index = 0
         for crownstone in self.crownstones:
+            self.crownstoneMap[crownstone.id] = index
+            index += 1
             crownstone.loadEventBus(self.eventBus)
         
     def loadBroadcasters(self, broadcasters):
@@ -144,9 +149,9 @@ class SimulationCore:
         for broadcaster in self.broadcasters:
             if broadcaster.willBroadcastMessage:
                 for crownstone in self.crownstones:
-                    message = broadcaster.generateMessage(crownstone.id)
-                    if message is not None:
-                        crownstone.newMeasurement(message)
+                    messageResult = broadcaster.generateMessage(crownstone.id)
+                    if messageResult is not None:
+                        crownstone.newMeasurement(messageResult[0], messageResult[1])
                     
         # last step we deliver all messages that were sent in the last round.
         messageIds = list(self.messages.keys())
@@ -183,17 +188,26 @@ class SimulationCore:
         :return:
         """
         
-        # senderId = message["sender"]
-        # sender = self.crownstones[]
-        # receiverId = receiver.id
-
-        # rssi =
+        
+        senderId = message["sender"]
+        receiverId = receiver.id
+        rssi = None
+        if senderId in self.crownstoneMap:
+            sender = self.crownstones[self.crownstoneMap[senderId]]
+    
+            rssi = self._getRssiBetweenCrownstones(sender,receiver)
         
         
-        if message["sender"] == receiver.id:
+        ##
+        # HERE we can put code that checks topology, then sets the expected time of arrival and compares this with the current time
+        # If it is delayed, we will return:
+        # return MessageState.DELAYED
+        ##
+        
+        if message["sender"] == receiverId:
             return MessageState.SKIPPED
         
-        receiver.receiveMessage(message)
+        receiver.receiveMessage(message, rssi)
         return MessageState.DELIVERED
     
     
@@ -205,10 +219,13 @@ class SimulationCore:
             "sentTime": self.t,
             "handled": {}
         }
-    
-    
+        
     def _getRssiBetweenCrownstones(self, crownstone1, crownstone2):
-        return -60
+        distance = SimMath.getDistance(crownstone1, crownstone2)
+        rssiCalibration = self.config["rssiCalibration"]
+        NValue = self.config["nValue"]
     
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimum"])
+        
     
     

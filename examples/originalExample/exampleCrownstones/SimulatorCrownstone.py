@@ -21,7 +21,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     
        
     # overloaded
-    def receiveMessage(self, data):
+    def receiveMessage(self, data, rssi):
         """
             This is where mesh messages are received
             :param data:  { "sender":string, "payload": dictionary }
@@ -29,13 +29,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         print(self.id, "I HAVE A MESSAGE FROM", data["sender"], " SAYING ", data["payload"])
 
     # overloaded
-    def newMeasurement(self, data):
+    def newMeasurement(self, data, rssi):
         """
             This is where scanned ble devices are seen
             :param data:  { "address":string, "payload": dictionary, "rssi": number }
         """
-        print(self.time, self.id, "Scans indicate", data["address"], " with payload ", data["payload"], " and rssi:", data["rssi"])
+        print(self.time, self.id, "Scans indicate", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
         
-        if data['rssi'] > -45:
-            self.sendMessage("I saw a beacon with more that -45 dB!" + str(data["rssi"]) + "   " + str(self.time))
+        if rssi > -45:
+            self.sendMessage("I saw a beacon with more that -45 dB!" + str(rssi) + "   " + str(self.time))
             

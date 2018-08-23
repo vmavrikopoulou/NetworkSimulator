@@ -29,7 +29,7 @@ class BroadcasterCore:
         if rssi is None:
             return None
         
-        return { "address": self.address, "payload" : self.payload, "rssi": rssi }
+        return { "address": self.address, "payload" : self.payload }, rssi
     
     def getRssiToCrownstone(self, targetCrownstoneId):
         raise SimulatorException(

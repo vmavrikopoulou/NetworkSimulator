@@ -21,8 +21,8 @@ class SimulationGui(GuiCore):
     
     def __init__(self, width = 1280, height = 700):
         super().__init__(width, height)
-        self.width = 1600
-        self.height = 800
+        self.width = width
+        self.height = height
 
         self.pX = 0
         self.pY = 0

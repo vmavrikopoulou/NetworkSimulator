@@ -72,7 +72,7 @@ your behaviour.
 >```{"sender": < id or interaction module name >, "payload": < data >}```
 
 
-> ##### newMeasurement(data: any)
+> ##### newMeasurement(data: any, rssi: int)
 > When broadcasters reach this Crownstone, this method is calld. The format of the incoming data is:
 >
 >```{"address": < address of broadcaster >, "payload": < data >, "rssi": int}```

@@ -7,18 +7,26 @@ class SimMath:
     def __init__(self, gui):
         self.gui = gui
 
-    def _getDistance(self, posDict, sourcePos):
+    @staticmethod
+    def getDistance(posDict, sourcePos):
         dx = sourcePos[0] - posDict["x"]
         dy = sourcePos[1] - posDict["y"]
     
         return math.sqrt(dx ** 2 + dy ** 2)
 
+    @staticmethod
+    def getDistanceBetweenCrownstones(cs1, cs2):
+        dx = cs1.pos[0] - cs2.pos[0]
+        dy = cs1.pos[1] - cs2.pos[1]
+    
+        return math.sqrt(dx ** 2 + dy ** 2)
+
 
     def getRssiToCrownstone(self, crownstone, sourcePos):
-        distance = self._getDistance({"x":crownstone.pos[0], "y":crownstone.pos[1]}, sourcePos)
+        distance = SimMath.getDistance({"x":crownstone.pos[0], "y":crownstone.pos[1]}, sourcePos)
         rssiCalibration = self.gui.config["rssiCalibration"]
         NValue = self.gui.config["nValue"]
-        return self._getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
 
 
     def getRssiToPosition(self, targetPos, sourcePos):
@@ -31,19 +39,12 @@ class SimMath:
         """
         targetPosDict = {"x": targetPos[0], "y": targetPos[1]}
         
-        distance = self._getDistance(targetPosDict, sourcePos)
+        distance = SimMath.getDistance(targetPosDict, sourcePos)
         rssiCalibration = self.gui.config["rssiCalibration"]
         NValue = self.gui.config["nValue"]
     
-        return self._getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
     
-    def _getRSSI(self, calibration, NValue, distance, minRssi):
-        rssiMean = calibration - (10 * NValue) * math.log10(distance)
-        # rssi = numpy.random.normal(rssiMean, std)
-        if rssiMean < minRssi:
-            return None
-        
-        return rssiMean
 
     def isPointInPath(self, x, y, poly):
         """
@@ -61,3 +62,12 @@ class SimMath:
                 c = not c
             j = i
         return c
+
+    @staticmethod
+    def getRSSI(calibration, NValue, distance, minRssi):
+        rssiMean = calibration - (10 * NValue) * math.log10(distance)
+        # rssi = numpy.random.normal(rssiMean, std)
+        if rssiMean < minRssi:
+            return None
+    
+        return rssiMean

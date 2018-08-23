@@ -16,10 +16,10 @@ class CrownstoneCore:
     def sendMessage(self, data):
         self.eventBus.emit(Topics.meshMessage, {"sender": self.id, "payload": data})
     
-    def receiveMessage(self, data):
+    def receiveMessage(self, data, rssi):
         pass
     
-    def newMeasurement(self, data):
+    def newMeasurement(self, data, rssi):
         pass
     
     def tick(self, time):
