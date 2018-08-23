@@ -221,7 +221,7 @@ class SimulationCore:
         }
         
     def _getRssiBetweenCrownstones(self, crownstone1, crownstone2):
-        distance = SimMath.getDistance(crownstone1, crownstone2)
+        distance = SimMath.getDistanceBetweenCrownstones(crownstone1, crownstone2)
         rssiCalibration = self.config["rssiCalibration"]
         NValue = self.config["nValue"]
     
