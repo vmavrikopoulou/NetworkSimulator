@@ -28,7 +28,11 @@ class SimulationCore:
     def restart(self):
         if self.eventBus is not None:
             self.eventBus.destroy()
+    
+        # clear all messages
+        self.messages = {}
         
+        # add new eventBus
         newEventBus = EventBus()
         self.changeEventBus(newEventBus)
 
@@ -36,7 +40,6 @@ class SimulationCore:
         self.abort = True
 
     def loadConfig(self, config):
-        print("config", config)
         self.config = config
 
     def changeEventBus(self, eventBus):
