@@ -414,7 +414,7 @@ class SimulationGui(GuiCore):
                     # store results
                     self.resultMap[x][y] = roomId
                     
-                self.simulator.eventBus.subscribe(Topics.gotResult, { lambda data: drawResult(data["roomId"]) })
+                self.simulator.eventBus.subscribe(Topics.gotResult,  lambda data: drawResult(data["roomId"]) )
                 
                 self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
                 
@@ -461,7 +461,7 @@ class SimulationGui(GuiCore):
             # store results
             self.resultMap[x][y] = roomId
             
-        self.simulator.eventBus.subscribe(Topics.gotResult, { lambda data: drawResult(data["roomId"]) })
+        self.simulator.eventBus.subscribe(Topics.gotResult, lambda data: drawResult(data["roomId"]) )
         
         self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
         
