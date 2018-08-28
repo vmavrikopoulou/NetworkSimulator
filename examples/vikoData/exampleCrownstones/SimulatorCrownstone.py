@@ -15,7 +15,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     def __init__(self, id, x, y):
         super().__init__(id=id,x=x,y=y)
         self.debugPrint = False
-        self.flag = 4
+        self.flag = 0
+
         self.radiomap = {}
         self.label= 0
         self.predictions={}
@@ -64,16 +65,19 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             :param data:  { "sender":string, "payload": dictionary }
         """
         if data["payload"] == "StartTraining" :
+            print ("StartTraining")
             self.label = self.label+1
             self.radiomap[self.label] = {}
             self.flag = 1
         # When I receive "Start training" a flag informs the crownstone to start constructing their radio maps till a "Stop training" is received.
         if data["payload"] == "StopTraining" :
+            print ("StopTraining")
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
+            print ("StartLocalizing")
             self.flag = 2
-        if data["payload"] == "StopLocalizing":
-            self.flag = 3
+        # if data["payload"] == "StopLocalizing":
+        #     self.flag = 3
     
         if (self.flag == 1):
             #the radio map of each crownstone contains information-RSSI values received from all crownstones.
@@ -81,30 +85,38 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if data["sender"] not in self.radiomap[self.label]:
                     self.radiomap[self.label][data["sender"]]=[]
                 self.radiomap[self.label][data["sender"]].append(data['payload']['rssi'])
-    
+     
 
-        if (self.flag == 2 and self.sign == 1) or (self.flag == 4 and self.sign == 1):
+        if (self.flag == 2 and self.sign == 1 and self.k==0) or (self.flag == 4 and self.sign == 1 and self.k==0):
+            if ( self.k==0 ):
+                print ("Make the crownstone parameters")
+                self.parameters = self.crownParameters(self.radiomap)     
+                #i want to calculate the self.parameters only once
+                self.k == 1  
+            print ("Collect testdata")
             if 'rssi' in data['payload']:
                 if self.counter not in self.testSet:
                     self.testSet[self.counter]={}
                 if data["sender"] not in self.testSet[self.counter]:
                     self.testSet[self.counter][data["sender"]]=[]
                 self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
-               
-
-        
-        if (self.flag == 3 and self.n == 0) or (self.flag == 4):
-            self.n=1
-            self.parameters = self.crownParameters(self.radiomap)
-            print ("I have the parameters of each crownstone calculated from the radiomap")
+            print ("Make predictions")
             self.predictions = self.Predictions(self.parameters, self.test_dataset)
             print ("predictions of room_label", self.predictions)
-            #predictions_norm = self.Predictions_norm(self.parameters, self.test_dataset)
-            #print ("normalized predictions of room_label", self.predictions_norm)
-            #accuracy = self.Accuracy(self.test_dataset, self.predictions)
-            #print('Accuracy: ' + repr(accuracy) + '%')
-            #norm_accuracy = self.Accuracy(self.test_dataset, predictions_norm)
-            #print('Norm_Accuracy: ' + repr(norm_accuracy) + '%')
+            accuracy = self.Accuracy(self.test_dataset, self.predictions)
+            print('Accuracy: ' + repr(accuracy) + '%')
+               
+        
+        # if (self.flag == 3 and self.n == 0) or (self.flag == 4):
+        #     self.n=1
+        #     self.predictions = self.Predictions(self.parameters, self.test_dataset)
+        #     print ("predictions of room_label", self.predictions)
+        #     #predictions_norm = self.Predictions_norm(self.parameters, self.test_dataset)
+        #     #print ("normalized predictions of room_label", self.predictions_norm)
+        #     #accuracy = self.Accuracy(self.test_dataset, self.predictions)
+        #     #print('Accuracy: ' + repr(accuracy) + '%')
+        #     #norm_accuracy = self.Accuracy(self.test_dataset, predictions_norm)
+        #     #print('Norm_Accuracy: ' + repr(norm_accuracy) + '%')
 
 
 
@@ -163,16 +175,17 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         predictions = []
         for counter in self.testSet:
             room_label = self.PredictRoom(self.parameters, self.testSet[counter])
-            if room_label==1:
-                self.publishResult("Room 1")
-            elif room_label==2:
-                self.publishResult("Room 2")
-            elif room_label==3:
-                self.publishResult("Room 3")
-            elif room_label==4:
-                self.publishResult("Room 4")
-            elif room_label==5:
-                self.publishResult("Room 5")    
+            if self.flag==4:
+                if room_label==1:
+                    self.publishResult("Room 1")
+                elif room_label==2:
+                    self.publishResult("Room 2")
+                elif room_label==3:
+                    self.publishResult("Room 3")
+                elif room_label==4:
+                    self.publishResult("Room 4")
+                elif room_label==5:
+                    self.publishResult("Room 5")    
             predictions.append(room_label)
         return predictions
 
@@ -266,7 +279,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
     def Accuracy(self, testSet, predictions):
         correct = 0
-        room= 4
+        room= 3
         for x in range(len(predictions)):
             if room == (predictions[x]):
                 correct += 1
