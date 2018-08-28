@@ -221,8 +221,8 @@ class SimControlPanels:
         
 
     def drawViewToggles(self,screen):
-        drawHeight = self.gui.height - 270
-        sideDistance = 650
+        drawHeight = self.gui.height - 350
+        sideDistance = 250
         self.gui.text(screen, "Draw Options:", (255, 255, 255), (self.gui.width - sideDistance, drawHeight), True)
 
         drawHeight += 25

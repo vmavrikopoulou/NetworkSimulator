@@ -134,7 +134,7 @@ class SimulationGui(GuiCore):
         drawnSimOverlay = self.drawOverview(screen)
         self.simControlPanels.draw(screen)
         if drawnSimOverlay:
-            self.simColorRange.draw(screen, (self.width - 650, 10))
+            self.simColorRange.draw(screen, (self.width - 400, 10))
     
         if self.simulationRunning:
             time.sleep(0.0001)
@@ -155,7 +155,7 @@ class SimulationGui(GuiCore):
 
     def drawOverview(self, screen):
         # the map area will leave 400 px from the right side available. Draw white background:
-        mapSide = 650
+        mapSide = 400
     
         mWidth  = self.width  - mapSide - 2 * self.mapPadding
         mHeight = self.height - 2 * self.mapPadding
@@ -168,6 +168,8 @@ class SimulationGui(GuiCore):
         overviewSurface.fill((255, 255, 255, 255))
         drawnSimOverlay = self.simOverlays.draw(overviewSurface, mWidth, mHeight)
         
+        self.drawResultMap(overviewSurface)
+        
         if self.drawRoomOverlays:
             self.drawRooms(roomOverviewSurface, mWidth, mHeight)
             overviewSurface.blit(roomOverviewSurface,(0,0))
@@ -179,7 +181,6 @@ class SimulationGui(GuiCore):
         if self.drawUserPath:
             self.drawPath(overviewSurface)
             
-        self.drawResultMap(overviewSurface)
         
         screen.blit(overviewSurface, (self.mapPadding, self.mapPadding))
         
@@ -388,16 +389,19 @@ class SimulationGui(GuiCore):
         self.startSimulation(self.config["trainingPhaseDurationSeconds"])
         xBlockCount = math.ceil(self.mapWidth / self.blockSize)
         yBlockCount = math.ceil(self.mapHeight / self.blockSize)
-
+        
+        xStart = 0
+        yStart = 0
+        
         self.resultMap = {}
         
         if self.rooms is None:
             return
 
-        for i in range(0, xBlockCount):
+        for i in range(xStart, xBlockCount):
             x = i * self.blockSize + 0.5 * self.blockSize
             self.resultMap[x] = {}
-            for j in range(0, yBlockCount):
+            for j in range(yStart, yBlockCount):
                 y = j * self.blockSize + 0.5 * self.blockSize
 
                 self.resultMap[x][y] = None
