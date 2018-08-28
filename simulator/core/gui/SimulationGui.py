@@ -246,7 +246,7 @@ class SimulationGui(GuiCore):
             for corner in room["corners"]:
                 convertedPointList.append(self.xyMetersToPixels(corner))
             
-            pygame.draw.polygon(surf, (room["color"][0],room["color"][1],room["color"][2],60), convertedPointList)
+            pygame.draw.polygon(surf, (room["color"][0],room["color"][1],room["color"][2],120), convertedPointList)
             pygame.draw.polygon(surf, room["color"], convertedPointList, 3)
             
     def drawMap(self, surf, mWidth, mHeight):
