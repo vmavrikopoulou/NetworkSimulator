@@ -13,6 +13,7 @@ class SimUserBroadcaster(BroadcasterCore):
 
         self.pathIndex = 0
         self.pathTime = 0
+        self.time = 0
 
         self.pathFinished = False
         self.pos = [self.gui.simUserMovement.path[0][0],self.gui.simUserMovement.path[0][1]]
@@ -22,10 +23,11 @@ class SimUserBroadcaster(BroadcasterCore):
         targetCrownstone = self.gui.simulatorCrownstonesMap[targetCrownstoneId]
         # calculate position of user
         rssi = self.gui.simMath.getRssiToPosition(targetCrownstone.pos, self.pos)
-        
+        print("TargetCS",  self.time, targetCrownstoneId, rssi, targetCrownstone.pos, self.pos)
         return rssi
         
     def tick(self, simulationTime):
+        self.time = simulationTime
         lastPathPoint = None
         userSpeed = self.gui.config["userWalkingSpeed"]
         

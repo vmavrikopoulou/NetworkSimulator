@@ -20,7 +20,7 @@ class SimUserMovement:
         if self.gui.state["pathDrawing"]:
             posOnMap = (pos[0] - self.gui.mapPadding, pos[1] - self.gui.mapPadding)
             if posOnMap[0] < self.gui.mapWidth and posOnMap[1] < self.gui.mapHeight:
-                self.path.append(self.gui.xyPixelsToMeters(posOnMap))
+                self.path.append(self.gui.xyPxVectorToZeroRefMeters(posOnMap))
 
     def saveToFile(self):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")
