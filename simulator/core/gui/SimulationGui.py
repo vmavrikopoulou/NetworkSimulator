@@ -126,7 +126,7 @@ class SimulationGui(GuiCore):
         while 1:
             self.render(self.screen)
             
-    def render(self, screen):
+    def render(self, screen, skipSleep = False):
         self.prepareForRender()
     
         screen.fill((0, 62, 82, 1.0))
@@ -135,12 +135,13 @@ class SimulationGui(GuiCore):
         self.simControlPanels.draw(screen)
         if drawnSimOverlay:
             self.simColorRange.draw(screen, (self.width - 400, 10))
-    
-        if self.simulationRunning:
-            time.sleep(0.0001)
-        else:
-            time.sleep(0.01)
-    
+        
+        if not skipSleep:
+            if self.simulationRunning:
+                time.sleep(0.0001)
+            else:
+                time.sleep(0.01)
+        
         if self.simulationRunning:
             self.simulator.continueSimulation(0.25, self.config["simulationTimeStepSeconds"])
             self.text(screen, "SIMULATION RUNNING", (0, 0, 0), (20, 20))
@@ -457,7 +458,7 @@ class SimulationGui(GuiCore):
                     
                     if render:
                         if counter%15 == 0:
-                            self.render(self.screen)
+                            self.render(self.screen, True)
                     else:
                         print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
 
@@ -465,7 +466,7 @@ class SimulationGui(GuiCore):
         self.simulator.resetSimulatorForResults()
         self.collectingStaticResults = False
         if render:
-            self.render(self.screen)
+            self.render(self.screen, True)
         
 
     def doSingleStaticRun(self, render = True):
@@ -509,7 +510,7 @@ class SimulationGui(GuiCore):
         self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
         
         if render:
-            self.render(self.screen)
+            self.render(self.screen, True)
         else:
             print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
 
