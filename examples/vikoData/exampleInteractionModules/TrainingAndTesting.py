@@ -114,11 +114,11 @@ class TrainingAndTesting(InteractionCore):
             self.sendMessage("StartTraining")
             self.sendMessage("Room5")
         
-        elif self.lastTime < 110 <= time:
+        elif self.lastTime < 109 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room5")
 
-        elif self.lastTime < 119 <= time:
+        elif self.lastTime < 122 <= time:
             self.sendMessage("StartLocalizing")
 
 

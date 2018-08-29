@@ -14,47 +14,55 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     
     def __init__(self, id, x, y):
         super().__init__(id=id,x=x,y=y)
-        self.debugPrint = False
-        self.flag = 0
-
+        #self.debugPrint = False
+        self.flag = 0 
         self.radiomap = {}
         self.label= 0
         self.predictions={}
-        self.predictions_norm={}
+        #self.predictions_norm={}
         self.testSet = {}
         self.counter = 0
         self.sign= 0
         self.test_dataset = 0
         self.n=0
         self.k=0
+        self.publish=0
 
     def print(data):
         if self.debugPrint:
             print(data)
 
-    def resetState(self, resetTrainingData = False):
+    def resetState(self, resetTrainingData):
         #This is an important method to reset any state the Crownstone may have so the simulation can be restarted.
         #If resetTrainingData is False, you should clear all state data except that referring to the training sets.
-        resetTrainingData = False
         if resetTrainingData:
+            print ("resetTrainingData", resetTrainingData)
+            print ("time", self.time)
+            self.flag = 0 
             self.radiomap ={}
             self.label= 0
             self.predictions={}
-            self.predictions_norm={}
+            #self.predictions_norm={}
             self.testSet = {}
             self.counter = 0
             self.sign= 0
             self.test_dataset = 0
             self.n=0
+            self.k=0
+            self.publish = 0
         else:
-            self.flag = 4
+            print ("resetTrainingData", resetTrainingData)
+            print ("time", self.time)
             self.testSet = {}
             self.test_dataset = 0
-            self.predictions={}
-            self.counter=0
+            self.label=0
+            self.predictions= {}
+            self.counter= 0
             self.sign= 0
             self.n=0
-
+            self.k=0
+            self.flag = 2
+            self.publish = 1
 
             
     # overloaded
@@ -85,22 +93,22 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if data["sender"] not in self.radiomap[self.label]:
                     self.radiomap[self.label][data["sender"]]=[]
                 self.radiomap[self.label][data["sender"]].append(data['payload']['rssi'])
-     
+                print ("self.radiomap", self.radiomap)
 
-        if (self.flag == 2 and self.sign == 1 and self.k==0) or (self.flag == 4 and self.sign == 1 and self.k==0):
-            if ( self.k==0 ):
-                print ("Make the crownstone parameters")
-                self.parameters = self.crownParameters(self.radiomap)     
+
+        if (self.flag == 2 and self.sign == 1 and self.k==0):
+            #print ("self.radiomap", self.radiomap)
+            if (self.k == 0):
+                self.parameters = self.crownParameters(self.radiomap) 
+                #print ("self.parameters", self.parameters)    
                 #i want to calculate the self.parameters only once
-                self.k == 1  
-            print ("Collect testdata")
+                self.k = 1  
             if 'rssi' in data['payload']:
                 if self.counter not in self.testSet:
                     self.testSet[self.counter]={}
                 if data["sender"] not in self.testSet[self.counter]:
                     self.testSet[self.counter][data["sender"]]=[]
                 self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
-            print ("Make predictions")
             self.predictions = self.Predictions(self.parameters, self.test_dataset)
             print ("predictions of room_label", self.predictions)
             accuracy = self.Accuracy(self.test_dataset, self.predictions)
@@ -129,7 +137,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.radiomap[self.label][self.id].append(rssi)
             #print ("self.radiomap", self.radiomap)
 
-        if (self.flag == 2) or (self.flag==4):
+        if (self.flag == 2):
             self.counter = self.counter + 1
             self.sign = 1
             if self.counter not in self.testSet:
@@ -175,7 +183,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         predictions = []
         for counter in self.testSet:
             room_label = self.PredictRoom(self.parameters, self.testSet[counter])
-            if self.flag==4:
+            if self.publish==1:
                 if room_label==1:
                     self.publishResult("Room 1")
                 elif room_label==2:
