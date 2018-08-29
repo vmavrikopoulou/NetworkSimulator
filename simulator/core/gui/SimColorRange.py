@@ -36,7 +36,7 @@ class SimColorRange:
         for i in range(0, self.stepCount + 1):
             j = self.stepCount - i
             value = self.startRange + ((valueRange / self.stepCount) * j)
-            self.gui.text(rangeSurface, "{:3.3f}".format(value), (255, 255, 255), (35, blockHeight * i))
+            self.gui.text(rangeSurface, "{:3.1f}".format(value), (255, 255, 255), (35, blockHeight * i))
         
         self.gui.createClickableArea(pos, 50, rHeight, self.changeColorScheme)
         
