@@ -18,8 +18,8 @@ class CrownstoneCore:
     def loadEventBus(self, eventBus):
         self.eventBus = eventBus
     
-    def sendMessage(self, data):
-        self.eventBus.emit(Topics.meshMessage, {"sender": self.id, "payload": data})
+    def sendMessage(self, data, ttl = 5):
+        self.eventBus.emit(Topics.meshMessage, {"sender": self.id, "payload": data, "ttl": ttl})
     
     def receiveMessage(self, data, rssi):
         pass
