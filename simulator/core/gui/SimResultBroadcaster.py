@@ -20,6 +20,5 @@ class SimResultBroadcaster(BroadcasterCore):
         targetCrownstone = self.gui.simulatorCrownstonesMap[targetCrownstoneId]
         rssi = self.gui.simMath.getRssiUserToCrownstone(targetCrownstone.pos, self.pos)
         
-        # print("SENDING", targetCrownstoneId, targetCrownstone.pos, self.pos, rssi)
         return rssi
     
