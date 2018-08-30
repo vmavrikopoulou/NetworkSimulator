@@ -11,6 +11,7 @@ class SimulationCore:
         self.interactionModule = None
         self.crownstones = []
         self.crownstoneMap = {}
+        self.deliveredMap = {}
         self.broadcasters = []
     
         self.eventBus = None
@@ -31,6 +32,9 @@ class SimulationCore:
     
         # clear all messages
         self.messages = {}
+        self.deliveredMap = {}
+        for crownstone in self.crownstones:
+            self.deliveredMap[crownstone.id] = set()
         
         # add new eventBus
         newEventBus = EventBus()
@@ -75,6 +79,7 @@ class SimulationCore:
             self.crownstoneMap[crownstone.id] = index
             index += 1
             crownstone.loadEventBus(self.eventBus)
+            self.deliveredMap[crownstone.id] = set()
         
     def loadBroadcasters(self, broadcasters):
         """
@@ -162,67 +167,94 @@ class SimulationCore:
         for mId in messageIds:
             # ignore any messages that have been sent this round
             if self.messages[mId]["sentTime"] < self.t:
-                for crownstone in self.crownstones:
-                    status = self.handleMessage(self.messages[mId], crownstone)
-                    if status == MessageState.DELIVERED or status == MessageState.SKIPPED:
-                        self.messages[mId]["handled"][crownstone.id] = True
-                    elif status == MessageState.FAILED:
-                        self.messages[mId]["handled"][crownstone.id] = False
+                status = self.handleMessage(self.messages[mId])
+                if status == MessageState.DELIVERED or status == MessageState.SKIPPED:
+                    self.messages[mId]["processed"] = True
+                elif status == MessageState.FAILED or status == MessageState.UNREACHABLE or status == MessageState.ALREADY_DELIVERED:
+                    self.messages[mId]["processed"] = True
                         
 
         # clean up messages that have been successfully handled.
         for mId in messageIds:
-            finished = True
-            for crownstone in self.crownstones:
-                if crownstone.id not in self.messages[mId]["handled"]:
-                    finished = False
-                    break
-            if finished:
-                # print("Clean up message", mId)
+            if self.messages[mId]["processed"]:
                 self.messages.pop(mId)
                 
     
-    
-    
-    def handleMessage(self, message, receiver):
-        """
-        This can be overridden to implement delays, topology, failures, etc.
-        :param message:
-        :param receiver:
-        :return:
-        """
+    def handleMessage(self, message):
+        transmissionDelay = self.config["transmissionDelayInSeconds"]
         
-        receiverId = receiver.id
-        if message["sender"] == receiverId:
+        receiverId = message["receiverId"]
+        if message["senderId"] == receiverId:
             return MessageState.SKIPPED
         
-        senderId = message["sender"]
+        senderId = message["senderId"]
         rssi = None
+        
+        sender   = None
+        receiver = None
+        
         if senderId in self.crownstoneMap:
             sender = self.crownstones[self.crownstoneMap[senderId]]
+
+            if receiverId in self.crownstoneMap:
+                receiver = self.crownstones[self.crownstoneMap[receiverId]]
             
-            rssi = self._getRssiBetweenCrownstones(sender,receiver)
+                rssi = self._getRssiBetweenCrownstones(sender, receiver)
+        else:
+            # these are messages from the interaction module
+            if receiverId in self.crownstoneMap:
+                receiver = self.crownstones[self.crownstoneMap[receiverId]]
+                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "id": message["messageId"]}, rssi)
+                return MessageState.DELIVERED
+            
+        if rssi is None:
+            return MessageState.UNREACHABLE
+        else:
+            if message["messageId"] in self.deliveredMap[receiverId]:
+                return MessageState.ALREADY_DELIVERED
+            
+            if message["sentTime"] + transmissionDelay < self.t:
+                # deliver
+                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "id":message["messageId"]}, rssi)
+                self.deliveredMap[receiverId].add(message["messageId"])
+                
+                # relay based on the TTL counter
+                if message["ttl"] > 1:
+                    self._collectMessage({
+                        "messageId": message["messageId"],
+                        "payload": message["payload"],
+                        "sender": message["senderId"],
+                        "ttl": message["ttl"] - 1,
+                    })
+            
+                return MessageState.DELIVERED
+            else:
+                return MessageState.DELAYED
         
         
-        ##
-        # HERE we can put code that checks topology, then sets the expected time of arrival and compares this with the current time
-        # If it is delayed, we will return:
-        # return MessageState.DELAYED
-        ##
-        
-        
-        receiver.receiveMessage(message, rssi)
-        return MessageState.DELIVERED
     
     
     def _collectMessage(self, messageData):
+        ttl = 5
+        if "ttl" in messageData:
+            ttl = messageData["ttl"]
+        
         messageId = str(uuid.uuid4())
-        self.messages[messageId] = {
-            "payload": messageData["payload"],
-            "sender": messageData["sender"],
-            "sentTime": self.t,
-            "handled": {}
-        }
+        sourceId = messageId
+        if "messageId" in messageData:
+            sourceId = messageData["messageId"]
+
+        for crownstone in self.crownstones:
+            if messageData["sender"] != crownstone.id:
+                self.messages[messageId + "_" + str(crownstone.id)] = {
+                    "messageId":  sourceId,
+                    "payload":    messageData["payload"],
+                    "senderId":   messageData["sender"],
+                    "receiverId": crownstone.id,
+                    "sentTime":   self.t,
+                    "ttl":        ttl,
+                    "processed":  False
+                }
         
     def _getRssiBetweenCrownstones(self, crownstone1, crownstone2):
         distance = SimMath.getDistanceBetweenCrownstones(crownstone1, crownstone2)
