@@ -22,11 +22,18 @@ class SimMath:
         return math.sqrt(dx ** 2 + dy ** 2)
 
 
-    def getRssiToCrownstone(self, crownstone, sourcePos):
+    def getRssiUserToCrownstone(self, crownstonePos, sourcePos):
+        distance = SimMath.getDistance({"x":crownstonePos[0], "y": crownstonePos[1]}, sourcePos)
+        rssiCalibration = self.gui.config["rssiCalibrationUser"]
+        NValue = self.gui.config["nValueUser"]
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumUser"])
+
+
+    def getRssiFromCrownstone(self, crownstone, sourcePos):
         distance = SimMath.getDistance({"x":crownstone.pos[0], "y":crownstone.pos[1]}, sourcePos)
-        rssiCalibration = self.gui.config["rssiCalibration"]
-        NValue = self.gui.config["nValue"]
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
+        rssiCalibration = self.gui.config["rssiCalibrationCrownstone"]
+        NValue = self.gui.config["nValueCrownstone"]
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumCrownstone"])
 
 
     def getRssiToPosition(self, targetPos, sourcePos):
@@ -40,10 +47,10 @@ class SimMath:
         targetPosDict = {"x": targetPos[0], "y": targetPos[1]}
         
         distance = SimMath.getDistance(targetPosDict, sourcePos)
-        rssiCalibration = self.gui.config["rssiCalibration"]
-        NValue = self.gui.config["nValue"]
+        rssiCalibration = self.gui.config["rssiCalibrationUser"]
+        NValue = self.gui.config["nValueUser"]
     
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimum"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumUser"])
     
 
     def isPointInPath(self, x, y, poly):

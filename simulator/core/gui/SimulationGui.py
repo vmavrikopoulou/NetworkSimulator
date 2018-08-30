@@ -199,7 +199,7 @@ class SimulationGui(GuiCore):
             counter = 0
             
             for pathPoint in self.simUserMovement.path:
-                pos = self.zeroRefMetersToXyPx(pathPoint)
+                pos = self.xyMetersToPixels(pathPoint)
                 if lastPos is not None:
                     color = self._getColor(colorStart, counter, pointCount)
                     pygame.draw.line(surf,color,lastPos,pos,2)
@@ -216,12 +216,12 @@ class SimulationGui(GuiCore):
 
             counter = 0
             for pathPoint in self.simUserMovement.path:
-                pos = self.zeroRefMetersToXyPx(pathPoint)
+                pos = self.xyMetersToPixels(pathPoint)
                 self.drawAaCircle(surf, pos,3,self._getColor(colorStart, counter, pointCount))
                 counter += 1
                 
         if self.userBroadcaster is not None and self.drawUser:
-            pos = self.zeroRefMetersToXyPx(self.userBroadcaster.pos)
+            pos = self.xyMetersToPixels(self.userBroadcaster.pos)
             self.drawAaCircle(surf, pos, 5, (0,62,82))
             
                 
@@ -283,10 +283,6 @@ class SimulationGui(GuiCore):
                 thickness = round(wall["thickness"]*scaleFactor)
                 pygame.draw.line(surf, (0, 0, 0), start, end, thickness)
                 
-            # draw zero point
-            zeroPos = self.xyMetersToPixels(m["zeroPoint"])
-            self.drawAaCircle(surf, zeroPos, 8, (255, 0, 0))
-
 
 
     def drawResultMap(self, surf):
@@ -315,7 +311,7 @@ class SimulationGui(GuiCore):
             return
         
         for crownstone in self.simulatorCrownstones:
-            pos = self.zeroRefMetersToXyPx(crownstone.pos)
+            pos = self.xyMetersToPixels(crownstone.pos)
         
             cid = crownstone.id
             # lambda cid=cid: func(cid) is used to lock the value of cid in this loop to the lambda function.
@@ -338,48 +334,6 @@ class SimulationGui(GuiCore):
         :return:
         """
         return round((posVector[0] + self.pX) * self.scaleFactor), round((posVector[1] + self.pY) * self.scaleFactor)
-    
-    def xyMetersToZeroRefMeters(self, posVector):
-        posInM = (self.mapData["zeroPoint"][0] + posVector[0],
-                  self.mapData["zeroPoint"][1] + posVector[1])
-        
-        return posInM
-    
-    def xyPxToZeroRefMeters(self, x, y):
-        """
-        Convert a position in pixels to a position in meters relative to the zero point on the map
-        :param x:
-        :param y:
-        :return:
-        """
-        mX = x / self.scaleFactor - self.pX - self.mapData["zeroPoint"][0]
-        mY = y / self.scaleFactor - self.pY - self.mapData["zeroPoint"][1]
-        
-        return mX, mY
-
-    def xyPxVectorToZeroRefMeters(self, posVector):
-        """
-        Convert a position in pixels to a position in meters relative to the zero point on the map
-        :param x:
-        :param y:
-        :return:
-        """
-        mX = posVector[0] / self.scaleFactor - self.pX - self.mapData["zeroPoint"][0]
-        mY = posVector[1] / self.scaleFactor - self.pY - self.mapData["zeroPoint"][1]
-    
-        return mX, mY
-
-    def zeroRefMetersToXyPx(self, zeroRefPosVector):
-        """
-        Convert a position in pixels to a position in meters relative to the zero point on the map
-        :param x:
-        :param y:
-        :return:
-        """
-        pX = round((zeroRefPosVector[0]+self.mapData["zeroPoint"][0] + self.pX) * self.scaleFactor)
-        pY = round((zeroRefPosVector[1]+self.mapData["zeroPoint"][1] + self.pY) * self.scaleFactor)
-    
-        return pX, pY
     
     
     def calculateGroundTruthMap(self):
@@ -416,6 +370,7 @@ class SimulationGui(GuiCore):
         
         self.collectingStaticResults = True
         
+        print("START")
         self.startSimulation(self.config["trainingPhaseDurationSeconds"])
         xBlockCount = math.ceil(self.mapWidth / self.blockSize)
         yBlockCount = math.ceil(self.mapHeight / self.blockSize)
@@ -439,7 +394,7 @@ class SimulationGui(GuiCore):
                     counter += 1
     
                     self.resultMap[x][y] = None
-                    posInMeters = self.xyPxToZeroRefMeters(x,y)
+                    posInMeters = self.xyPixelsToMeters((x,y))
     
                     self.simulator.resetSimulatorForResults()
                     # fake a user at this point
@@ -491,7 +446,7 @@ class SimulationGui(GuiCore):
         y = j * self.blockSize + 0.5 * self.blockSize
 
         self.resultMap[x][y] = None
-        posInMeters = self.xyPxToZeroRefMeters(x,y)
+        posInMeters = self.xyPixelsToMeters((x,y))
 
         self.simulator.resetSimulatorForResults()
         # fake a user at this point
@@ -506,7 +461,6 @@ class SimulationGui(GuiCore):
             self.resultMap[x][y] = roomId
             
         self.simulator.eventBus.subscribe(Topics.gotResult, lambda data: drawResult(data["roomId"]) )
-        
         self.simulator.continueSimulation(self.config["simulationForMeasurementResultMaxSeconds"], self.config["simulationTimeStepSeconds"])
         
         if render:

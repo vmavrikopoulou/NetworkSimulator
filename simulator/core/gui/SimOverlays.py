@@ -5,6 +5,7 @@ from enum import Enum
 class OverlayModes(Enum):
     DISABLED = "DISABLED"
     RSSI = "RSSI"
+    RSSI_USER = "RSSI_USER"
     
 class SimOverlays:
     
@@ -15,20 +16,22 @@ class SimOverlays:
         if self.gui.selectedOverlayMode is None or self.gui.selectedOverlayMode == OverlayModes.DISABLED:
             return False
 
+        if self.gui.selectedOverlayMode == OverlayModes.RSSI_USER:
+            return self.drawUserRssiOverlay(surface, mWidth, mHeight)
+        
         if self.gui.selectedCrownstone is None:
             return False
         
         if self.gui.selectedOverlayMode == OverlayModes.RSSI:
-            return self.drawRssiOverlay(surface, mWidth, mHeight)
-   
-            
+            return self.drawCrownstoneRssiOverlay(surface, mWidth, mHeight)
 
-    def drawRssiOverlay(self, surface, mWidth, mHeight):
+
+    def drawCrownstoneRssiOverlay(self, surface, mWidth, mHeight):
         xBlockCount = math.ceil(mWidth/self.gui.blockSize)
         yBlockCount = math.ceil(mHeight/self.gui.blockSize)
         
         maxRSSI = -50
-        minRSSI = -98
+        minRSSI = self.gui.config["rssiMinimumCrownstone"]
         
         self.gui.simColorRange.startRange = minRSSI
         self.gui.simColorRange.endRange   = maxRSSI
@@ -44,14 +47,47 @@ class SimOverlays:
         
         for i in range(0,xBlockCount):
             for j in range(0,yBlockCount):
-                x,y  = self.gui.xyPxToZeroRefMeters(0.5*self.gui.blockSize + i*self.gui.blockSize, 0.5*self.gui.blockSize + j*self.gui.blockSize)
+                x,y  = self.gui.xyPixelsToMeters((0.5*self.gui.blockSize + i*self.gui.blockSize, 0.5*self.gui.blockSize + j*self.gui.blockSize))
                 
-                rssi = self.gui.simMath.getRssiToCrownstone(targetCrownstone, (x,y))
+                rssi = self.gui.simMath.getRssiFromCrownstone(targetCrownstone, (x,y))
                 if rssi is not None:
                     color = self.gui.simColorRange.getColor(rssi)
                     
                     pygame.draw.rect(surface, color, (i*self.gui.blockSize, j*self.gui.blockSize, self.gui.blockSize, self.gui.blockSize))
 
+        return True
+
+    def drawUserRssiOverlay(self, surface, mWidth, mHeight):
+        xBlockCount = math.ceil(mWidth / self.gui.blockSize)
+        yBlockCount = math.ceil(mHeight / self.gui.blockSize)
+    
+        maxRSSI = -50
+        minRSSI = self.gui.config["rssiMinimumUser"]
+    
+        self.gui.simColorRange.startRange = minRSSI
+        self.gui.simColorRange.endRange = maxRSSI
+
+        if self.gui.userBroadcaster is None:
+            if len(self.gui.simUserMovement.path) > 0:
+                userPos = self.gui.simUserMovement.path[0]
+            else:
+                return True
+        else:
+            userPos = self.gui.userBroadcaster.pos
+        
+        
+        for i in range(0, xBlockCount):
+            for j in range(0, yBlockCount):
+                x, y = self.gui.xyPixelsToMeters((0.5 * self.gui.blockSize + i * self.gui.blockSize,
+                                                  0.5 * self.gui.blockSize + j * self.gui.blockSize))
+
+                rssi = self.gui.simMath.getRssiUserToCrownstone(userPos, (x, y))
+                if rssi is not None:
+                    color = self.gui.simColorRange.getColor(rssi)
+                
+                    pygame.draw.rect(surface, color, (
+                    i * self.gui.blockSize, j * self.gui.blockSize, self.gui.blockSize, self.gui.blockSize))
+    
         return True
 
     def drawGroundTruthOverlay(self, surface, mWidth, mHeight):

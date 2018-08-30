@@ -180,6 +180,15 @@ class SimControlPanels:
         self.gui.text(screen, "Overlay Mode", (255, 255, 255), (self.gui.width - 300, drawHeight))
     
         drawHeight += 30
+
+        self.gui.createButton(
+            screen,
+            "Show User RSSI",
+            self.gui.selectedOverlayMode == OverlayModes.RSSI_USER,
+            (self.gui.width - 300, drawHeight),
+            self.gui.controlInteraction.toggleRSSIUserOverlay
+        )
+        drawHeight += 60
     
         self.gui.text(screen, "Selected Crownstone:", (255, 255, 255), (self.gui.width - 300, drawHeight))
         drawHeight += 20
@@ -189,12 +198,12 @@ class SimControlPanels:
         
             self.gui.createButton(
                 screen,
-                "Show RSSI",
+                "Show Crownstone RSSI",
                 self.gui.selectedOverlayMode == OverlayModes.RSSI,
                 (self.gui.width - 300, drawHeight),
                 self.gui.controlInteraction.toggleRSSIOverlay
             )
-            drawHeight += 120
+            drawHeight += 60
         
             self.gui.createButton(
                 screen,
@@ -205,6 +214,8 @@ class SimControlPanels:
             )
         else:
             self.gui.text(screen, "None", (255, 255, 255), (self.gui.width - 250, drawHeight))
+
+        
 
         self.drawBackButton(screen)
         
