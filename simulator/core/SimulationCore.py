@@ -204,7 +204,7 @@ class SimulationCore:
             # these are messages from the interaction module
             if receiverId in self.crownstoneMap:
                 receiver = self.crownstones[self.crownstoneMap[receiverId]]
-                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "id": message["messageId"]}, rssi)
+                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"]}, rssi)
                 return MessageState.DELIVERED
             
         if rssi is None:
@@ -215,7 +215,7 @@ class SimulationCore:
             
             if message["sentTime"] + transmissionDelay < self.t:
                 # deliver
-                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "id":message["messageId"]}, rssi)
+                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"]}, rssi)
                 self.deliveredMap[receiverId].add(message["messageId"])
                 
                 # relay based on the TTL counter
