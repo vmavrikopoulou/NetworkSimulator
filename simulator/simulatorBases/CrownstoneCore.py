@@ -6,6 +6,11 @@ class CrownstoneCore:
         self.id = id
         self.eventBus = None
         self.time = 0
+        self.debugPrint = False
+
+    def print(self, *data):
+        if self.debugPrint:
+            print(data)
         
     def setTime(self, time):
         self.time = time
