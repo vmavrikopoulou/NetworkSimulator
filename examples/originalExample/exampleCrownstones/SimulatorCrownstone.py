@@ -7,10 +7,10 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     """
         Class variables are created here.
     """
-    myValue = False
     
     def __init__(self, id, x, y):
         super().__init__(id=id,x=x,y=y)
+        self.myValue = False
        
     def resetState(self, resetTrainingData = True):
         """

@@ -106,7 +106,7 @@ class SimulationCore:
         """
         for crownstone in self.crownstones:
             crownstone.resetState(True)
-        
+            
         if timeStep <= 0:
             raise SimulatorException(SimulatorError.USER_INPUT_ERROR, "Invalid Step size. Must be larger than 0.")
         
@@ -203,6 +203,7 @@ class SimulationCore:
             
             rssi = self._getRssiBetweenCrownstones(sender,receiver)
         
+        
         ##
         # HERE we can put code that checks topology, then sets the expected time of arrival and compares this with the current time
         # If it is delayed, we will return:
@@ -225,10 +226,10 @@ class SimulationCore:
         
     def _getRssiBetweenCrownstones(self, crownstone1, crownstone2):
         distance = SimMath.getDistanceBetweenCrownstones(crownstone1, crownstone2)
-        rssiCalibration = self.config["rssiCalibration"]
-        NValue = self.config["nValue"]
+        rssiCalibration = self.config["rssiCalibrationCrownstone"]
+        NValue = self.config["nValueCrownstone"]
     
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimum"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimumCrownstone"])
         
     
     

@@ -13,6 +13,9 @@ class SimControlInteraction:
     def toggleRSSIOverlay(self):
         self._toggleOverlay(OverlayModes.RSSI)
         
+    def toggleRSSIUserOverlay(self):
+        self._toggleOverlay(OverlayModes.RSSI_USER)
+        
     def toggleSTDOverlay(self):
         self._toggleOverlay(OverlayModes.STD)
         
