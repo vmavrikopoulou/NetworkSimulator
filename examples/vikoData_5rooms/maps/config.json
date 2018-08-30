@@ -1,0 +1,19 @@
+{
+  "rssiCalibrationCrownstone": -60,
+  "nValueCrownstone": 4,
+  "rssiMinimumCrownstone": -98,
+
+  "rssiCalibrationUser": -60,
+  "nValueUser": 3,
+  "rssiMinimumUser": -98,
+
+  "transmissionDelayInSeconds": 0,
+
+  "simulateOutsideRooms": true,
+  "userWalkingSpeed": 1.1,
+  "simulationPredefinedEndpoint": 0,
+  "simulationBatchTimeStepSizeSeconds":  155,
+  "trainingPhaseDurationSeconds": 135,
+  "simulationForMeasurementResultMaxSeconds":20,
+  "simulationTimeStepSeconds": 0.01
+}

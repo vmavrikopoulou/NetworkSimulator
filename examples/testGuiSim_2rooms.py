@@ -6,7 +6,6 @@ from examples.vikoData_2rooms.exampleCrownstones.SimulatorCrownstone import Simu
 from examples.vikoData_2rooms.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
 from simulator import SimulationGui, JsonFileStore, Simulator
 
-
 mapData = JsonFileStore('./vikoData_2rooms/maps/officesExample.json').getData()
 config = JsonFileStore('./vikoData_2rooms/maps/config.json').getData()
 rooms = JsonFileStore('./vikoData_2rooms/maps/roomOverlay.json').getData()
@@ -22,8 +21,6 @@ userModule = JsonFileStore('./vikoData_2rooms/maps/userData.json').getData()
 # down right (0, 12)
 
 #First topology !!!
-testStone = SimulatorCrownstone(8, -2, -3)
-testStone.debugPrint = True
 simulatorCrownstones = [
 	SimulatorCrownstone(1, 0, 10), # X, Y positions in meters relative to zeroPoint on Map
 	SimulatorCrownstone(2, -10, 0), # X, Y positions in meters relative to zeroPoint on Map
@@ -32,7 +29,7 @@ simulatorCrownstones = [
 	SimulatorCrownstone(5, -6, 7),
 	SimulatorCrownstone(6, -4 , -1),
 	SimulatorCrownstone(7, -12, 8),
-	testStone,
+	SimulatorCrownstone(8, -2, -3),
 	SimulatorCrownstone(9, -4, -6),
 	SimulatorCrownstone(10, -7, -5),
 	SimulatorCrownstone(11, 0, 5), 
@@ -46,6 +43,7 @@ simulatorCrownstones = [
 	SimulatorCrownstone(19, -5, 1),
 	SimulatorCrownstone(20, -12, -4)
 ]
+
 
 
 # create a custom interaction module
@@ -64,8 +62,8 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
+# a.startSimulation(125)
 a.run()
-a.startSimulation(130)
 
 
 # # running without gui interaction:
@@ -73,7 +71,7 @@ a.startSimulation(130)
 # a.render(a.screen)
 # a.calculateGroundTruthMap()
 # a.doSingleStaticRun(False)
-# # 
+# #
 # # results live in:
 # #print(a.groundTruthMap)
 # print(a.resultMap)

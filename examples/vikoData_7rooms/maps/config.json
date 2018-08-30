@@ -1,0 +1,12 @@
+{
+  "rssiCalibration": -60,
+  "nValue": 3,
+  "rssiMinimum": -150,
+  "simulateOutsideRooms": true,
+  "userWalkingSpeed": 1.1,
+  "simulationPredefinedEndpoint": 0,
+  "simulationBatchTimeStepSizeSeconds": 185,
+  "trainingPhaseDurationSeconds": 178,
+  "simulationForMeasurementResultMaxSeconds":5,
+  "simulationTimeStepSeconds": 0.01
+}
