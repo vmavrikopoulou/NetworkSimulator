@@ -19,4 +19,4 @@ class InteractionCore:
         )
     
     def sendMessage(self, message):
-        self.eventBus.emit(Topics.meshMessage, {"sender": self.name, "payload": message})
+        self.eventBus.emit(Topics.interactionMessage, {"sender": self.name, "payload": message})

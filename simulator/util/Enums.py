@@ -1,6 +1,7 @@
 from enum import Enum
 
 class MessageState(Enum):
+    DELIVERED_AT_ENDPOINT = "DELIVERED_AT_ENDPOINT"
     DELIVERED = "DELIVERED"
     FAILED = "FAILED"
     DELAYED = "DELAYED"
