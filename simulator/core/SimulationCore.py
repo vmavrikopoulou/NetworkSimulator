@@ -11,7 +11,13 @@ class SimulationCore:
         self.interactionModule = None
         self.crownstones = []
         self.crownstoneMap = {}
-        self.deliveredMap = {}
+        self.deliveredCrownstoneMap = {}
+        self.deliveredMessageMap = {}
+        self.crownstoneRssiMap = {}
+        self.crownstoneTopologyMap = {}
+        self.messageCounter = 0
+        self.transmissionDelay = 0
+        
         self.broadcasters = []
     
         self.eventBus = None
@@ -32,9 +38,9 @@ class SimulationCore:
     
         # clear all messages
         self.messages = {}
-        self.deliveredMap = {}
+        self.deliveredCrownstoneMap = {}
         for crownstone in self.crownstones:
-            self.deliveredMap[crownstone.id] = set()
+            self.deliveredCrownstoneMap[crownstone.id] = set()
         
         # add new eventBus
         newEventBus = EventBus()
@@ -45,6 +51,7 @@ class SimulationCore:
 
     def loadConfig(self, config):
         self.config = config
+        self.transmissionDelay = self.config["transmissionDelayInSeconds"]
 
     def changeEventBus(self, eventBus):
         self.eventBus = eventBus
@@ -54,7 +61,8 @@ class SimulationCore:
             
         for broadcaster in self.broadcasters:
             broadcaster.loadEventBus(self.eventBus)
-
+        
+        self.eventBus.subscribe(Topics.interactionMessage, self._collectInteractionHandlerMessage)
         self.eventBus.subscribe(Topics.meshMessage, self._collectMessage)
         self.eventBus.subscribe(Topics.gotResult, self._abortSimulation)
     
@@ -79,7 +87,7 @@ class SimulationCore:
             self.crownstoneMap[crownstone.id] = index
             index += 1
             crownstone.loadEventBus(self.eventBus)
-            self.deliveredMap[crownstone.id] = set()
+            self.deliveredCrownstoneMap[crownstone.id] = set()
         
     def loadBroadcasters(self, broadcasters):
         """
@@ -112,6 +120,8 @@ class SimulationCore:
         for crownstone in self.crownstones:
             crownstone.resetState(True)
             
+        self.constructTopology()
+        
         if timeStep <= 0:
             raise SimulatorException(SimulatorError.USER_INPUT_ERROR, "Invalid Step size. Must be larger than 0.")
         
@@ -163,100 +173,147 @@ class SimulationCore:
                         crownstone.newMeasurement(messageResult[0], messageResult[1])
                     
         # last step we deliver all messages that were sent in the last round.
+        relayMessages = []
+        deleteList = []
         messageIds = list(self.messages.keys())
         for mId in messageIds:
             # ignore any messages that have been sent this round
-            if self.messages[mId]["sentTime"] < self.t:
+            if self.messages[mId]["sentTime"] + self.transmissionDelay < self.t:
                 status = self.handleMessage(self.messages[mId])
-                if status == MessageState.DELIVERED or status == MessageState.SKIPPED:
+                if status == MessageState.DELIVERED:
+                    relayMessages.append(mId)
+                if status != MessageState.DELAYED:
                     self.messages[mId]["processed"] = True
-                elif status == MessageState.FAILED or status == MessageState.UNREACHABLE or status == MessageState.ALREADY_DELIVERED:
-                    self.messages[mId]["processed"] = True
-                        
-
+                    deleteList.append(mId)
+                    
+        for mId in relayMessages:
+            self._relayMessage(self.messages[mId])
+            
         # clean up messages that have been successfully handled.
-        for mId in messageIds:
-            if self.messages[mId]["processed"]:
-                self.messages.pop(mId)
+        for mId in deleteList:
+            self.messages.pop(mId)
                 
     
     def handleMessage(self, message):
-        transmissionDelay = self.config["transmissionDelayInSeconds"]
+        self.handleMessageCounter += 1
         
         receiverId = message["receiverId"]
-        if message["senderId"] == receiverId:
-            return MessageState.SKIPPED
-        
         senderId = message["senderId"]
-        rssi = None
         
-        sender   = None
+        rssi = None
         receiver = None
         
         if senderId in self.crownstoneMap:
-            sender = self.crownstones[self.crownstoneMap[senderId]]
-
-            if receiverId in self.crownstoneMap:
-                receiver = self.crownstones[self.crownstoneMap[receiverId]]
+            receiver = self.crownstones[self.crownstoneMap[receiverId]]
             
-                rssi = self._getRssiBetweenCrownstones(sender, receiver)
+            rssi = self.crownstoneRssiMap[senderId][receiverId]
         else:
             # these are messages from the interaction module
             if receiverId in self.crownstoneMap:
                 receiver = self.crownstones[self.crownstoneMap[receiverId]]
-                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": None}, rssi)
-                return MessageState.DELIVERED
+                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": 0}, rssi)
+                return MessageState.DELIVERED_AT_ENDPOINT
             
         if rssi is None:
             return MessageState.UNREACHABLE
         else:
-            if message["messageId"] in self.deliveredMap[receiverId]:
-                return MessageState.ALREADY_DELIVERED
+            # deliver the message
+            # the ttl has been reduced by 1 since it has been sent once.
+            self.receivedCounter += 1
+            receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1}, rssi)
             
-            if message["sentTime"] + transmissionDelay < self.t:
-                # deliver the message
-                # the ttl has been reduced by 1 since it has been sent once.
-                receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1}, rssi)
-                self.deliveredMap[receiverId].add(message["messageId"])
-                
-                # relay based on the TTL counter
-                if message["ttl"] > 1:
-                    self._collectMessage({
-                        "messageId": message["messageId"],
-                        "payload": message["payload"],
-                        "sender": message["senderId"],
-                        "ttl": message["ttl"] - 1,
-                    })
-            
+            if message["ttl"] > 1:
                 return MessageState.DELIVERED
             else:
-                return MessageState.DELAYED
+                return MessageState.DELIVERED_AT_ENDPOINT
         
+    def _relayMessage(self, message):
+        # relay based on the TTL counter
+        if self.deliveredMessageMap[message["messageId"]] == len(self.crownstones) - 1:
+            return
         
+        self._collectMessage({
+            "messageId": message["messageId"],
+            "payload": message["payload"],
+            "sender": message["senderId"],
+            "ttl": message["ttl"] - 1,
+        })
+        
+    receivedCounter = 0
+    handleMessageCounter = 0
+    collectMessageCounter = 0
+    skipCounter = 0
+    
+    def _collectInteractionHandlerMessage(self, messageData):
+        self.messageCounter += 1
+        sourceId = self.messageCounter
+        
+        for crownstone in self.crownstones:
+            self.messages[str(self.messageCounter) + "_" + str(crownstone.id)] = {
+                "messageId": sourceId,
+                "payload": messageData["payload"],
+                "senderId": messageData["sender"],
+                "receiverId": crownstone.id,
+                "sentTime": self.t,
+                "ttl": 1,
+                "processed": False
+            }
     
     
     def _collectMessage(self, messageData):
-        ttl = 5
-        if "ttl" in messageData:
-            ttl = messageData["ttl"]
+        self.collectMessageCounter += 1
+        ttl = messageData["ttl"]
         
-        messageId = str(uuid.uuid4())
-        sourceId = messageId
+        self.messageCounter += 1
+        sourceId = self.messageCounter
         if "messageId" in messageData:
             sourceId = messageData["messageId"]
+        else:
+            self.deliveredMessageMap[sourceId] = 0
+
+        for crownstoneId in self.crownstoneTopologyMap[messageData["sender"]]:
+            if sourceId in self.deliveredCrownstoneMap[crownstoneId]:
+                self.skipCounter += 1
+                continue
+            
+            self.deliveredCrownstoneMap[crownstoneId].add(sourceId)
+            self.deliveredMessageMap[sourceId] += 1
+            self.messages[str(self.messageCounter) + "_" + str(crownstoneId)] = {
+                "messageId":  sourceId,
+                "payload":    messageData["payload"],
+                "senderId":   messageData["sender"],
+                "receiverId": crownstoneId,
+                "sentTime":   self.t,
+                "ttl":        ttl,
+                "processed":  False
+            }
+        
+        
+        
+    
+    def constructTopology(self):
+        # get the rssi between Crownstones
+        self.crownstoneTopologyMap = {}
+        self.crownstoneRssiMap = {}
+        self.deliveredCrownstoneMap = {}
 
         for crownstone in self.crownstones:
-            if messageData["sender"] != crownstone.id:
-                self.messages[messageId + "_" + str(crownstone.id)] = {
-                    "messageId":  sourceId,
-                    "payload":    messageData["payload"],
-                    "senderId":   messageData["sender"],
-                    "receiverId": crownstone.id,
-                    "sentTime":   self.t,
-                    "ttl":        ttl,
-                    "processed":  False
-                }
-        
+            self.crownstoneTopologyMap[crownstone.id] = []
+            self.deliveredCrownstoneMap[crownstone.id] = set()
+            for targetCrownstone in self.crownstones:
+                if crownstone.id != targetCrownstone.id:
+                    if crownstone.id not in self.crownstoneRssiMap:
+                        self.crownstoneRssiMap[crownstone.id] = {}
+                    
+                    if targetCrownstone.id not in self.crownstoneRssiMap[crownstone.id]:
+                        self.crownstoneRssiMap[crownstone.id][targetCrownstone.id] = self._getRssiBetweenCrownstones(crownstone, targetCrownstone)
+                    
+                    rssi = self.crownstoneRssiMap[crownstone.id][targetCrownstone.id]
+                    
+                    if rssi is not None:
+                        self.crownstoneTopologyMap[crownstone.id].append(targetCrownstone.id)
+                
+
     def _getRssiBetweenCrownstones(self, crownstone1, crownstone2):
         distance = SimMath.getDistanceBetweenCrownstones(crownstone1, crownstone2)
         rssiCalibration = self.config["rssiCalibrationCrownstone"]

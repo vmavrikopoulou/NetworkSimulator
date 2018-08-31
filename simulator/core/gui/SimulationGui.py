@@ -370,7 +370,6 @@ class SimulationGui(GuiCore):
         
         self.collectingStaticResults = True
         
-        print("START")
         self.startSimulation(self.config["trainingPhaseDurationSeconds"])
         xBlockCount = math.ceil(self.mapWidth / self.blockSize)
         yBlockCount = math.ceil(self.mapHeight / self.blockSize)
@@ -424,7 +423,7 @@ class SimulationGui(GuiCore):
             self.render(self.screen, True)
         
 
-    def doSingleStaticRun(self, render = True):
+    def getSingleStaticResult(self, render = True):
         self.calculateGroundTruthMap()
         
         self.collectingStaticResults = True
