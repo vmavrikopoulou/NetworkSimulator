@@ -101,11 +101,15 @@ class SimulationGui(GuiCore):
         self.rooms = rooms
         
     def startSimulation(self, duration = None):
-        self.userBroadcaster = SimUserBroadcaster(self.userData["address"], self)
-        self.userBroadcaster.setBroadcastParameters(intervalMs=self.userData["intervalMs"], payload=self.userData["payload"])
-        self.config["userWalkingSpeed"] = self.userData["userWalkingSpeed"]
+        # allow for no user
+        if self.userData is not None:
+            self.userBroadcaster = SimUserBroadcaster(self.userData["address"], self)
+            self.userBroadcaster.setBroadcastParameters(intervalMs=self.userData["intervalMs"], payload=self.userData["payload"])
+            self.config["userWalkingSpeed"] = self.userData["userWalkingSpeed"]
         
-        self.simulator.loadBroadcasters([self.userBroadcaster])
+            self.simulator.loadBroadcasters([self.userBroadcaster])
+            
+            
         if duration is None:
             duration = self.config["simulationPredefinedEndpoint"]
         self.simulator.start(duration, self.config["simulationTimeStepSeconds"])
@@ -119,7 +123,37 @@ class SimulationGui(GuiCore):
         
     def initScreen(self):
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.DOUBLEBUF, 32)
-    
+
+        # determine the scale of the map, m/pixel
+        pX = self.config["viewPaddingMeters"]
+        pY = self.config["viewPaddingMeters"]
+        width = self.config["viewWidthMeters"] + 2 * self.config["viewPaddingMeters"]
+        height = self.config["viewHeightMeters"] + 2 * self.config["viewPaddingMeters"]
+
+        mapSide = 400
+
+        mWidth = self.width - mapSide - 2 * self.mapPadding
+        mHeight = self.height - 2 * self.mapPadding
+
+        self.mapWidth = mWidth
+        self.mapHeight = mHeight
+
+        hf = mHeight / height
+        wf = mWidth / width
+
+        scaleFactor = wf
+        if width * hf < mWidth:
+            scaleFactor = hf
+            totalWidth = width * hf
+            pX += ((mWidth - totalWidth) * 0.5) / scaleFactor
+        else:
+            totalHeight = height * hf
+            pY += ((mHeight - totalHeight) * 0.5) / scaleFactor
+
+        self.pX = pX
+        self.pY = pY
+        self.scaleFactor = scaleFactor
+
     def run(self):
         self.initScreen()
     
@@ -156,25 +190,17 @@ class SimulationGui(GuiCore):
 
     def drawOverview(self, screen):
         # the map area will leave 400 px from the right side available. Draw white background:
-        mapSide = 400
-    
-        mWidth  = self.width  - mapSide - 2 * self.mapPadding
-        mHeight = self.height - 2 * self.mapPadding
-        
-        self.mapWidth = mWidth
-        self.mapHeight = mHeight
-        
-        overviewSurface = pygame.Surface((mWidth, mHeight))
-        roomOverviewSurface = pygame.Surface((mWidth, mHeight), pygame.SRCALPHA)
+        overviewSurface = pygame.Surface((self.mapWidth, self.mapHeight))
+        roomOverviewSurface = pygame.Surface((self.mapWidth, self.mapHeight), pygame.SRCALPHA)
         overviewSurface.fill((255, 255, 255, 255))
-        drawnSimOverlay = self.simOverlays.draw(overviewSurface, mWidth, mHeight)
+        drawnSimOverlay = self.simOverlays.draw(overviewSurface, self.mapWidth, self.mapHeight)
         
         self.drawResultMap(overviewSurface)
         
         if self.drawRoomOverlays:
-            self.drawRooms(roomOverviewSurface, mWidth, mHeight)
+            self.drawRooms(roomOverviewSurface, self.mapWidth, self.mapHeight)
             overviewSurface.blit(roomOverviewSurface,(0,0))
-        self.drawMap(overviewSurface,mWidth,mHeight)
+        self.drawMap(overviewSurface)
         
         if self.drawSimulationCrownstones:
             self.drawSimCrownstones(overviewSurface, (self.mapPadding, self.mapPadding))
@@ -201,7 +227,7 @@ class SimulationGui(GuiCore):
             for pathPoint in self.simUserMovement.path:
                 pos = self.xyMetersToPixels(pathPoint)
                 if lastPos is not None:
-                    color = self._getColor(colorStart, counter, pointCount)
+                    color = self._getColor(colorStart, counter)
                     pygame.draw.line(surf,color,lastPos,pos,2)
                     dx = pathPoint[0] - lastPathPoint[0]
                     dy = pathPoint[1] - lastPathPoint[1]
@@ -217,7 +243,7 @@ class SimulationGui(GuiCore):
             counter = 0
             for pathPoint in self.simUserMovement.path:
                 pos = self.xyMetersToPixels(pathPoint)
-                self.drawAaCircle(surf, pos,3,self._getColor(colorStart, counter, pointCount))
+                self.drawAaCircle(surf, pos,3,self._getColor(colorStart, counter))
                 counter += 1
                 
         if self.userBroadcaster is not None and self.drawUser:
@@ -225,7 +251,7 @@ class SimulationGui(GuiCore):
             self.drawAaCircle(surf, pos, 5, (0,62,82))
             
                 
-    def _getColor(self, startColor, counter, total):
+    def _getColor(self, startColor, counter):
         sc = startColor
         step = 5
         
@@ -238,7 +264,7 @@ class SimulationGui(GuiCore):
         else:
             return 0,0,0
        
-    def drawRooms(self, surf, mWidth, mHeight):
+    def drawRooms(self, surf):
         if self.rooms is None:
             return
     
@@ -250,37 +276,16 @@ class SimulationGui(GuiCore):
             pygame.draw.polygon(surf, (room["color"][0],room["color"][1],room["color"][2],120), convertedPointList)
             pygame.draw.polygon(surf, room["color"], convertedPointList, 3)
             
-    def drawMap(self, surf, mWidth, mHeight):
+    def drawMap(self, surf):
         # draw map
+        
         m = self.mapData
+        # draw walls
         if m is not None:
-            # determine the scale of the map, m/pixel
-            pX = m["padding"]
-            pY = m["padding"]
-            width  = m["width"] + 2 * m["padding"]
-            height = m["height"] + 2 * m["padding"]
-            
-            hf = mHeight / height
-            wf = mWidth / width
-            
-            scaleFactor = wf
-            if width * hf < mWidth:
-                scaleFactor = hf
-                totalWidth = width * hf
-                pX += ((mWidth - totalWidth) * 0.5) / scaleFactor
-            else:
-                totalHeight = height * hf
-                pY += ((mHeight - totalHeight) * 0.5) / scaleFactor
-            
-            self.pX = pX
-            self.pY = pY
-            self.scaleFactor = scaleFactor
-            
-            # draw walls
             for wall in m["walls"]:
                 start = self.xyMetersToPixels(wall["start"])
                 end = self.xyMetersToPixels(wall["end"])
-                thickness = round(wall["thickness"]*scaleFactor)
+                thickness = round(wall["thickness"]*self.scaleFactor)
                 pygame.draw.line(surf, (0, 0, 0), start, end, thickness)
                 
 

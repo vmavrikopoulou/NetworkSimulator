@@ -221,7 +221,7 @@ class SimulationCore:
             # the ttl has been reduced by 1 since it has been sent once.
             self.receivedCounter += 1
             receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1}, rssi)
-            
+        
             if message["ttl"] > 1:
                 return MessageState.DELIVERED
             else:
@@ -231,11 +231,12 @@ class SimulationCore:
         # relay based on the TTL counter
         if self.deliveredMessageMap[message["messageId"]] == len(self.crownstones) - 1:
             return
+    
         
         self._collectMessage({
             "messageId": message["messageId"],
             "payload": message["payload"],
-            "sender": message["senderId"],
+            "sender": message["receiverId"], # the receiver is now the sender
             "ttl": message["ttl"] - 1,
         })
         
@@ -271,6 +272,9 @@ class SimulationCore:
         else:
             self.deliveredMessageMap[sourceId] = 0
 
+        # we add the original sender to the delivered map so it won't get his own message when the sender changes
+        self.deliveredCrownstoneMap[messageData["sender"]].add(sourceId)
+        
         for crownstoneId in self.crownstoneTopologyMap[messageData["sender"]]:
             if sourceId in self.deliveredCrownstoneMap[crownstoneId]:
                 self.skipCounter += 1

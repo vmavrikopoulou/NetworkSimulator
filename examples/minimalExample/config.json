@@ -1,13 +1,13 @@
 {
   "rssiCalibrationCrownstone": -60,
-  "nValueCrownstone": 3,
+  "nValueCrownstone": 4.5,
   "rssiMinimumCrownstone": -98,
 
   "rssiCalibrationUser": -60,
   "nValueUser": 3,
   "rssiMinimumUser": -98,
 
-  "transmissionDelayInSeconds": 0.1,
+  "transmissionDelayInSeconds": 0.2,
 
   "simulateOutsideRooms": true,
   "userWalkingSpeed": 1.1,
@@ -18,6 +18,6 @@
   "simulationTimeStepSeconds": 0.01,
 
   "viewWidthMeters": 20,
-  "viewHeightMeters": 18,
+  "viewHeightMeters": 15,
   "viewPaddingMeters": 2
 }
