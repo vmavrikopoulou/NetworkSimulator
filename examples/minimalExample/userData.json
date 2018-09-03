@@ -1,0 +1,9 @@
+{
+  "address": "12:32:41:29:ff",
+  "userWalkingSpeed": 1.1,
+  "intervalMs":400,
+  "payload": "ibeaconUUID:Major:Minor:1",
+  "path": [
+    [100,100]
+  ]
+}
