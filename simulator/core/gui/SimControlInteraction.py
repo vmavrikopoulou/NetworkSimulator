@@ -85,8 +85,8 @@ class SimControlInteraction:
     def getStaticResults(self):
         self.gui.getStaticResults()
 
-    def doSingleStaticRun(self):
-        self.gui.doSingleStaticRun()
+    def getSingleStaticResult(self):
+        self.gui.getSingleStaticResult()
 
     def getDynamicResults(self):
         pass

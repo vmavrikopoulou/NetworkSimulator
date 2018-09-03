@@ -128,7 +128,7 @@ class SimControlPanels:
             "Do Single Static Run",
             self.gui.collectingStaticResults,
             (self.gui.width - 300, drawHeight),
-            self.gui.controlInteraction.doSingleStaticRun
+            self.gui.controlInteraction.getSingleStaticResult
         )
 
         drawHeight += 60
