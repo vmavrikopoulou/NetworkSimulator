@@ -63,7 +63,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             
     # overloaded
     def receiveMessage(self, data, rssi):
-
+        print ("Crownstone", self.id, "receives from Crownstone", data["sender"], "data", data["payload"], "and rssi", rssi)
         """
             This is where mesh messages are received
             :param data:  { "sender":string, "payload": dictionary }

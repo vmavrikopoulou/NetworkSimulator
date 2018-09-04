@@ -25,8 +25,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.sign= 0
         self.test_dataset = 0
         self.n=0
-        self.k=0
         self.publish=0
+        self.param=0
 
     def print(data):
         if self.debugPrint:
@@ -47,6 +47,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.test_dataset = 0
             self.n=0
             self.k=0
+            self.param=1
             self.publish = 0
         else:
             self.testSet = {}
@@ -56,9 +57,9 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.counter= 0
             self.sign= 0
             self.n=0
-            self.k=0
             self.flag = 2
             self.publish = 1
+            self.param = 0
 
             
     # overloaded
@@ -69,16 +70,14 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             :param data:  { "sender":string, "payload": dictionary }
         """
         if data["payload"] == "StartTraining" :
-            #print ("StartTraining")
             self.label = self.label+1
             self.radiomap[self.label] = {}
             self.flag = 1
         # When I receive "Start training" a flag informs the crownstone to start constructing their radio maps till a "Stop training" is received.
         if data["payload"] == "StopTraining" :
-            #print ("StopTraining")
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
-            #print ("StartLocalizing")
+            self.param = 1
             self.flag = 2
         # if data["payload"] == "StopLocalizing":
         #     self.flag = 3
@@ -92,13 +91,17 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 #print ("self.radiomap", self.radiomap)
 
 
-        if (self.flag == 2 and self.sign == 1 and self.k==0):
-            #print ("self.radiomap", self.radiomap)
-            if (self.k == 0):
-                self.parameters = self.crownParameters(self.radiomap) 
-                #print ("self.parameters", self.parameters)    
-                #i want to calculate the self.parameters only once
-                self.k = 1  
+        if (self.label==5 and self.flag==0 and self.param==1):
+            self.parameters = self.crownParameters(self.radiomap)
+            #I want to calculate the self.parameters only once
+            self.param=0
+
+        if (self.flag == 2 and self.sign == 1):
+            if self.param == 1: 
+                self.parameters = self.crownParameters(self.radiomap)
+                #I want to calculate the self.parameters only once
+                self.param=0
+            #print ("self.radiomap", self.radiomap)  
             if 'rssi' in data['payload']:
                 if self.counter not in self.testSet:
                     self.testSet[self.counter]={}
@@ -106,9 +109,9 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     self.testSet[self.counter][data["sender"]]=[]
                 self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
             self.predictions = self.Predictions(self.parameters, self.test_dataset)
-            print ("predictions of room_label", self.predictions)
+            #print ("predictions of room_label", self.predictions)
             accuracy = self.Accuracy(self.test_dataset, self.predictions)
-            print('Accuracy: ' + repr(accuracy) + '%')
+            #print('Accuracy: ' + repr(accuracy) + '%')
                
         
         # if (self.flag == 3 and self.n == 0) or (self.flag == 4):
@@ -189,7 +192,11 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 elif room_label==4:
                     self.publishResult("Room 4")
                 elif room_label==5:
-                    self.publishResult("Room 5")    
+                    self.publishResult("Room 5") 
+                elif room_label==6:
+                    self.publishResult("Room 6")
+                elif room_label==7:
+                    self.publishResult("Room 7")   
             predictions.append(room_label)
         return predictions
 

@@ -21,7 +21,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     
     def tick(self,time):
         if self.root and self.time == 0:
-            self.sendMessage({"test":True}, 2)
+            self.sendMessage({"test":True}, 3)
        
     # overloaded
     def receiveMessage(self, data, rssi):

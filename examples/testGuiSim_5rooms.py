@@ -2,15 +2,12 @@
 # it does not have to do anything other than be imported.
 from util import path
 
-from examples.vikoData_5rooms.exampleCrownstones.SimulatorCrownstone import SimulatorCrownstone
-from examples.vikoData_5rooms.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
-from simulator import SimulationGui, JsonFileStore, Simulator
-
 # # first room layout
 mapData = JsonFileStore('./vikoData_5rooms/maps/officesExample.json').getData()
 config = JsonFileStore('./vikoData_5rooms/maps/config.json').getData()
 rooms = JsonFileStore('./vikoData_5rooms/maps/roomOverlay.json').getData()
 userModule = JsonFileStore('./vikoData_5rooms/maps/userData.json').getData()
+
 
 
 # SimulationCrownstones are not perse real Crownstones. These are points to which the rssi's will be calculated.
@@ -21,7 +18,7 @@ userModule = JsonFileStore('./vikoData_5rooms/maps/userData.json').getData()
 # down left (-12, 12)
 # down right (0, 12)
 
-
+#First topology !!!
 simulatorCrownstones = [
 	SimulatorCrownstone(1, 0, 0), # X, Y positions in meters relative to zeroPoint on Map
 	SimulatorCrownstone(2, 6, 0), # X, Y positions in meters relative to zeroPoint on Map
@@ -45,6 +42,8 @@ simulatorCrownstones = [
 	SimulatorCrownstone(20, 12, 4)
 ]
 
+
+
 # create a custom interaction module
 interactionModule = TrainingAndTesting("Victoria")
 
@@ -61,8 +60,9 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-#a.startSimulation(155)
+#a.startSimulation(133)
 a.run()
+
 
 
 # # running without gui interaction:

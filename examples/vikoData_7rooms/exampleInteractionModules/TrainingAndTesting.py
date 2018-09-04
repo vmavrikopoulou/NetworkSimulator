@@ -20,62 +20,59 @@ class TrainingAndTesting(InteractionCore):
             self.sendMessage("StartTraining")
             self.sendMessage("Room1")
         
-        elif self.lastTime < 34 <= time:
+        elif self.lastTime < 44.0 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room1")
 
-        elif self.lastTime < 36 <= time:
+        elif self.lastTime < 45.2 <= time:
             self.sendMessage("StartTraining")
             self.sendMessage("Room2")
-               
-        #elif self.lastTime < 4  and time >= 4:
-        #    self.sendMessage({"startTraining", label:"room2"})
             
-        elif self.lastTime < 49 <= time:
+        elif self.lastTime < 59.4 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room2")
 
-        elif self.lastTime < 51 <= time:
+        elif self.lastTime < 60.8 <= time:
             self.sendMessage("StartTraining")
             self.sendMessage("Room3")
         
-        elif self.lastTime < 83 <= time:
+        elif self.lastTime < 97.5 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room3")
 
-        elif self.lastTime < 88 <= time:
+        elif self.lastTime < 101.2 <= time:
             self.sendMessage("StartTraining")
             self.sendMessage("Room4")
         
-        elif self.lastTime < 97 <= time:
+        elif self.lastTime < 113.7 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room4")
 
-        elif self.lastTime < 99 <= time:
+        elif self.lastTime < 114 <= time:
             self.sendMessage("StartTraining")
             self.sendMessage("Room5")
         
-        elif self.lastTime < 123 <= time:
+        elif self.lastTime < 143.8 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room5")
 
-        elif self.lastTime < 126 <= time:
+        elif self.lastTime < 144 <= time:
             self.sendMessage("StartTraining")
             self.sendMessage("Room6")
         
-        elif self.lastTime < 151 <= time:
+        elif self.lastTime < 176.9 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room6")
 
-        elif self.lastTime < 153 <= time:
+        elif self.lastTime < 179.2 <= time:
             self.sendMessage("StartTraining")
             self.sendMessage("Room7")
         
-        elif self.lastTime < 178 <= time:
+        elif self.lastTime < 207.4 <= time:
             self.sendMessage("StopTraining")
             self.sendMessage("Room7")
 
-        elif self.lastTime < 180 <= time:
+        elif self.lastTime < 208 <= time:
             self.sendMessage("StartLocalizing")
 
 

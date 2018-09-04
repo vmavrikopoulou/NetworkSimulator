@@ -1,12 +1,23 @@
 {
-  "rssiCalibration": -60,
-  "nValue": 3,
-  "rssiMinimum": -150,
-  "simulateOutsideRooms": true,
+  "rssiCalibrationCrownstone": -60,
+  "nValueCrownstone": 5,
+  "rssiMinimumCrownstone": -95,
+
+  "rssiCalibrationUser": -60,
+  "nValueUser": 3.5,
+  "rssiMinimumUser": -95,
+
+  "transmissionDelayInSeconds": 2,
+
+  "simulateOutsideRooms": false,
   "userWalkingSpeed": 1.1,
   "simulationPredefinedEndpoint": 0,
-  "simulationBatchTimeStepSizeSeconds": 185,
-  "trainingPhaseDurationSeconds": 178,
+  "simulationBatchTimeStepSizeSeconds": 250,
+  "trainingPhaseDurationSeconds": 230,
   "simulationForMeasurementResultMaxSeconds":5,
-  "simulationTimeStepSeconds": 0.01
+  "simulationTimeStepSeconds": 0.01,
+
+  "viewWidthMeters": 18,
+  "viewHeightMeters": 12,
+  "viewPaddingMeters": 2
 }

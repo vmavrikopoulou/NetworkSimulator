@@ -14,26 +14,37 @@ userModule = JsonFileStore('./vikoData_7rooms/maps/userData.json').getData()
 
 
 simulatorCrownstones = [
-	SimulatorCrownstone(1, 5, 0), # X, Y positions in meters relative to zeroPoint on Map
-	SimulatorCrownstone(2, -10, 0), # X, Y positions in meters relative to zeroPoint on Map
-	SimulatorCrownstone(3, 5, 5), # X, Y positions in meters relative to zeroPoint on Map
-  	SimulatorCrownstone(4, 0, 6),
-  	SimulatorCrownstone(5, 0, -6),
-  	SimulatorCrownstone(6, -12, -6),
-  	SimulatorCrownstone(7, -11, 5),
-	SimulatorCrownstone(8, 0, 0),
-	SimulatorCrownstone(9, -2, -2),
-	SimulatorCrownstone(10, -8, -3),
-	SimulatorCrownstone(11, 2, 4),
-	SimulatorCrownstone(12, -11, -4),
-	SimulatorCrownstone(13, -2, 3),
-	SimulatorCrownstone(14, -9, 3),
-	SimulatorCrownstone(15, 4, -5),
-	SimulatorCrownstone(16, -6, -6),
-	SimulatorCrownstone(17, -3, -5),
-	SimulatorCrownstone(18, -5, 4),
-	SimulatorCrownstone(19, -6, -2),
-	SimulatorCrownstone(20, -3, 1)
+	#SimulatorCrownstone(1, 9, 10), # X, Y positions in meters relative to zeroPoint on Map
+	#room7
+	SimulatorCrownstone(1, 5, 11), # X, Y positions in meters relative to zeroPoint on Map
+	#room6
+	SimulatorCrownstone(2, 6, 7), # X, Y positions in meters relative to zeroPoint on Map
+  	#SimulatorCrownstone(4, 15, 5),
+  	#SimulatorCrownstone(5, 1, 1),
+  	#room1
+  	SimulatorCrownstone(3, 4, 2),
+  	#SimulatorCrownstone(7, 8, 1),
+  	#room3
+	SimulatorCrownstone(4, 12, 4),
+	#SimulatorCrownstone(4, 16, 1),
+	#SimulatorCrownstone(5, 9, 4),
+	#room2
+	SimulatorCrownstone(5, 6, 5),
+	#SimulatorCrownstone(12, 9, 8),
+	#SimulatorCrownstone(13, 2, 8),
+	#SimulatorCrownstone(14, 3, 5),
+	#SimulatorCrownstone(15, 1, 11),
+	#SimulatorCrownstone(16, 16, 7),
+	#SimulatorCrownstone(17, 11, 11),
+	#room5
+	SimulatorCrownstone(6, 11, 7),
+	#room4
+	SimulatorCrownstone(7, 14, 10),
+	#SimulatorCrownstone(20, 16, 11),
+	#SimulatorCrownstone(21, 13, 8),
+	#SimulatorCrownstone(22, 11, 1),
+	#SimulatorCrownstone(23, 6, 9),
+	#SimulatorCrownstone(24, 1, 5)
 ]
 
 
@@ -53,7 +64,7 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-# a.startSimulation(125)
+#a.startSimulation(200)
 a.run()
 
 

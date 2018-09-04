@@ -8,16 +8,15 @@ from simulator import SimulationGui, JsonFileStore, Simulator
 config = JsonFileStore('./minimalExample/config.json').getData()
 userModule = JsonFileStore('./minimalExample/userData.json').getData()
 
-root = SimulatorCrownstone("crownstone1", 0,   0)
+root = SimulatorCrownstone(1, 0, 0)
 root.root = True
 simulatorCrownstones = [
     root,
-    SimulatorCrownstone("crownstone2", 5,  3),
-    SimulatorCrownstone("crownstone3", 10,  6),
-    SimulatorCrownstone("crownstone4", 15,   9),
-    SimulatorCrownstone("crownstone5", 15,   13),
+    SimulatorCrownstone(2, 5, 3),
+    SimulatorCrownstone(3, 10, 6),
+    SimulatorCrownstone(4, 15, 9),
+    SimulatorCrownstone(5, 15, 13),
 ]
-
 
 a = SimulationGui()
 a.loadSimulatorCrownstones(simulatorCrownstones)
@@ -28,5 +27,5 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-a.run()
 a.startSimulation(2)
+#a.run()
