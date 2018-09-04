@@ -198,7 +198,7 @@ class SimulationGui(GuiCore):
         self.drawResultMap(overviewSurface)
         
         if self.drawRoomOverlays:
-            self.drawRooms(roomOverviewSurface, self.mapWidth, self.mapHeight)
+            self.drawRooms(roomOverviewSurface)
             overviewSurface.blit(roomOverviewSurface,(0,0))
         self.drawMap(overviewSurface)
         
@@ -330,7 +330,7 @@ class SimulationGui(GuiCore):
         :param posVector:
         :return:
         """
-        return ((posVector[0] / self.scaleFactor) - self.pX, (posVector[1] / self.scaleFactor) - self.pY)
+        return (posVector[0] / self.scaleFactor) - self.pX, (posVector[1] / self.scaleFactor) - self.pY
     
     def xyMetersToPixels(self, posVector):
         """
