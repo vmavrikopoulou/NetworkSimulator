@@ -10,7 +10,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         Class variables are created here.
     """
     #myValue = False
-
+    
+    
     def __init__(self, id, x, y):
         super().__init__(id=id,x=x,y=y)
         #self.debugPrint = False
@@ -26,8 +27,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.n=0
         self.publish=0
         self.param=0
-        self.timer=0
-        self.k=0
 
     def print(data):
         if self.debugPrint:
@@ -59,7 +58,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.sign= 0
             self.n=0
             self.flag = 2
-            print ("set self.publish to 1")
             self.publish = 1
             self.param = 0
 
@@ -67,19 +65,16 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     # overloaded
     def receiveMessage(self, data, rssi):
         #print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
-
         """
             This is where mesh messages are received
             :param data:  { "sender":string, "payload": dictionary }
         """
         if data["payload"] == "StartTraining" :
-            print ("StartTraining")
             self.label = self.label+1
             self.radiomap[self.label] = {}
             self.flag = 1
         # When I receive "Start training" a flag informs the crownstone to start constructing their radio maps till a "Stop training" is received.
         if data["payload"] == "StopTraining" :
-            print ("StopTraining")
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
             self.param = 1
@@ -90,13 +85,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         if (self.flag == 1):
             #the radio map of each crownstone contains information-RSSI values received from all crownstones.
             if 'rssi' in data['payload']:
-                    if data['payload']['originalSender'] not in self.radiomap[self.label]:
-                        self.radiomap[self.label][data['payload']['originalSender']]=[]
-                    self.radiomap[self.label][data['payload']['originalSender']].append(data['payload']['rssi'])
-                    
+                if data["sender"] not in self.radiomap[self.label]:
+                    self.radiomap[self.label][data["sender"]]=[]
+                self.radiomap[self.label][data["sender"]].append(data['payload']['rssi'])
+                #print ("self.radiomap", self.radiomap)
+
 
         if (self.label==7 and self.flag==0 and self.param==1):
-            print ("calculate the parameters")
             self.parameters = self.crownParameters(self.radiomap)
             #I want to calculate the self.parameters only once
             self.param=0
@@ -114,15 +109,16 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     self.testSet[self.counter][data["sender"]]=[]
                 self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
             self.predictions = self.Predictions(self.parameters, self.test_dataset)
+            #print ("Crownstone", self.id)
             #print ("predictions of room_label", self.predictions)
             accuracy = self.Accuracy(self.test_dataset, self.predictions)
             #print('Accuracy: ' + repr(accuracy) + '%')
-               
+            #predictions_norm = self.Predictions_norm(self.parameters, self.test_dataset) #norm_accuracy = self.Accuracy(self.test_dataset, predictions_norm)
 
     # overloaded
     def newMeasurement(self, data, rssi):
         #print(self.time, self.id, "scans", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
-        self.sendMessage({"rssi":rssi, "originalSender":self.id}, 1)
+        self.sendMessage({"rssi":rssi}, 5)
         # if (self.flag == 1):
         #     if self.id not in self.radiomap[self.label]:
         #         self.radiomap[self.label][self.id]=[]
@@ -154,6 +150,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if self.id not in self.testSet[self.counter]:
                     self.testSet[self.counter][self.id]=[]
                 self.testSet[self.counter][self.id].append(data['payload']['rssi'])
+
 
 
     def crownParameters(self, radiomap):
@@ -188,12 +185,10 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
 
     def Predictions(self, parameters, testSet):
-        print ("inside the function Predictions")
         predictions = []
         for counter in self.testSet:
             room_label = self.PredictRoom(self.parameters, self.testSet[counter])
             if self.publish==1:
-                print ("self.publish is 1")
                 if room_label==1:
                     self.publishResult("Room 1")
                 elif room_label==2:
@@ -335,3 +330,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     #            prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
     #            probabilities[self.label] *= prob_density
     #    return probabilities
+
+
+
+
+            
+
+
+
+
+            
