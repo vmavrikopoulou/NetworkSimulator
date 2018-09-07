@@ -64,7 +64,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             
     # overloaded
     def receiveMessage(self, data, rssi):
-
+        #print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
         """
             This is where mesh messages are received
             :param data:  { "sender":string, "payload": dictionary }
@@ -92,6 +92,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
 
         if (self.label==5 and self.flag==0 and self.param==1):
+            #print ("calculate parameters")
             self.parameters = self.crownParameters(self.radiomap)
             #I want to calculate the self.parameters only once
             self.param=0
@@ -108,11 +109,14 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if data["sender"] not in self.testSet[self.counter]:
                     self.testSet[self.counter][data["sender"]]=[]
                 self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
+            #print ("testSet", self.testSet)
             self.predictions = self.Predictions(self.parameters, self.test_dataset)
             #print ("predictions of room_label", self.predictions)
             accuracy = self.Accuracy(self.test_dataset, self.predictions)
             #print('Accuracy: ' + repr(accuracy) + '%')
-               
+
+
+            
         
         # if (self.flag == 3 and self.n == 0) or (self.flag == 4):
         #     self.n=1
@@ -129,7 +133,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
     # overloaded
     def newMeasurement(self, data, rssi):
-        self.sendMessage({"rssi":rssi})
+        self.sendMessage({"rssi":rssi}, 3)
         if (self.flag == 1):
             if self.id not in self.radiomap[self.label]:
                 self.radiomap[self.label][self.id]=[]
@@ -144,6 +148,23 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             if self.id not in self.testSet[self.counter]:
                 self.testSet[self.counter][self.id]=[]
             self.testSet[self.counter][self.id].append(rssi)
+
+        # if (self.flag == 1):
+        #     if 'rssi' in data['payload']:
+        #         if self.id not in self.radiomap[self.label]:
+        #             self.radiomap[self.label][self.id]=[]
+        #         self.radiomap[self.label][self.id].append(data['payload']['rssi'])
+        #     #print ("self.radiomap", self.radiomap)
+
+        # if (self.flag == 2):
+        #     self.counter = self.counter + 1
+        #     self.sign = 1
+        #     if 'rssi' in data['payload']:
+        #         if self.counter not in self.testSet:
+        #             self.testSet[self.counter]={}
+        #         if self.id not in self.testSet[self.counter]:
+        #             self.testSet[self.counter][self.id]=[]
+        #         self.testSet[self.counter][self.id].append(data['payload']['rssi'])
 
 
 

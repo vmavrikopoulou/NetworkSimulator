@@ -2,6 +2,10 @@
 # it does not have to do anything other than be imported.
 from util import path
 
+from examples.vikoData_5rooms.exampleCrownstones.SimulatorCrownstone import SimulatorCrownstone
+from examples.vikoData_5rooms.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
+from simulator import SimulationGui, JsonFileStore, Simulator
+
 # # first room layout
 mapData = JsonFileStore('./vikoData_5rooms/maps/officesExample.json').getData()
 config = JsonFileStore('./vikoData_5rooms/maps/config.json').getData()
@@ -60,7 +64,7 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-#a.startSimulation(133)
+#a.startSimulation(140)
 a.run()
 
 
@@ -69,9 +73,9 @@ a.run()
 # a.initScreen()
 # a.render(a.screen)
 # a.calculateGroundTruthMap()
-# a.doSingleStaticRun(False)
+# a.getSingleStaticResult(False)
 # #
 # # results live in:
-# #print(a.groundTruthMap)
+# print(a.groundTruthMap)
 # print(a.resultMap)
 

@@ -98,16 +98,37 @@ b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 a.run()
-a.startSimulation(225)
+# a.startSimulation(225)
 
 
 # # running without gui interaction:
 # a.initScreen()
 # a.render(a.screen)
 # a.calculateGroundTruthMap()
-# a.doSingleStaticRun(False)
+# a.getStaticResults(False)
 # #
 # # results live in:
-# #print(a.groundTruthMap)
-# print(a.resultMap)
+# # print("truth map", a.groundTruthMap)
+# # print("result map", a.resultMap)
+
+
+# d1 = a.groundTruthMap
+# d2 = a.resultMap
+# counter = 0
+# correct = 0
+
+# for k1, v1 in d1.items():
+# 	if k1 in d2:
+# 	 	for v2 in d2[k1]:
+# 	 		for ck in v1.keys():
+# 	 			if ck in d2[k1]:
+# 	 				counter += 1
+# 	 				if (d1[k1][ck]==d2[k1][ck]):
+# 	 					correct += 1
+
+# print ("counter", counter)
+# print ("correct", correct)
+# accuracy = correct/counter * 100
+# print ('Accuracy: ' + repr(accuracy) + '%')
+			
 

@@ -109,6 +109,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             #print ("predictions of room_label", self.predictions)
             accuracy = self.Accuracy(self.test_dataset, self.predictions)
             #print('Accuracy: ' + repr(accuracy) + '%')
+
                
         
         # if (self.flag == 3 and self.n == 0) or (self.flag == 4):

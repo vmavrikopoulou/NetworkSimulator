@@ -62,8 +62,8 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-#a.startSimulation(133)
-a.run()
+a.startSimulation(133)
+#a.run()
 
 
 # # running without gui interaction:
