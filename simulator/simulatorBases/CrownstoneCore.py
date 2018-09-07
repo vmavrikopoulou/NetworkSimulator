@@ -7,6 +7,7 @@ class CrownstoneCore:
         self.eventBus = None
         self.time = 0
         self.debugPrint = False
+        self.debugInformation = {}
 
     def print(self, *data):
         if self.debugPrint:

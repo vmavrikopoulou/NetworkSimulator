@@ -396,6 +396,9 @@ class SimulationGui(GuiCore):
                 y = j * self.blockSize + 0.5 * self.blockSize
                 if self.groundTruthMap[x][y] is not None or self.config["simulateOutsideRooms"]:
                     counter += 1
+
+                    for crownstone in self.simulatorCrownstones:
+                        crownstone.debugInformation = {"x":x, "y":y}
     
                     self.resultMap[x][y] = None
                     posInMeters = self.xyPixelsToMeters((x,y))
