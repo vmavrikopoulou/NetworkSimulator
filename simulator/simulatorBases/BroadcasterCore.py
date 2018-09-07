@@ -10,7 +10,7 @@ class BroadcasterCore:
         self.eventBus = None
         self.willBroadcastMessage = False
         
-        self.timeLastBroadcast = random.random()
+        self.timeLastBroadcast = 0
         self.address = address
 
     def loadEventBus(self, eventBus):
