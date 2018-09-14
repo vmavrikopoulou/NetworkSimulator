@@ -65,7 +65,7 @@ b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 a.run()
-a.startSimulation(130)
+#a.startSimulation(130)
 
 
 # # running without gui interaction:

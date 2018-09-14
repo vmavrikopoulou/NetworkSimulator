@@ -1,13 +1,13 @@
 {
   "rssiCalibrationCrownstone": -60,
-  "nValueCrownstone": 4,
+  "nValueCrownstone": 5,
   "rssiMinimumCrownstone": -95,
 
   "rssiCalibrationUser": -60,
   "nValueUser": 3.5,
   "rssiMinimumUser": -95,
 
-  "transmissionDelayInSeconds": 5,
+  "transmissionDelayInSeconds": 0,
 
   "simulateOutsideRooms": false,
   "userWalkingSpeed": 1.1,

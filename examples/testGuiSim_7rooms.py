@@ -15,17 +15,17 @@ userModule = JsonFileStore('./vikoData_7rooms/maps/userData.json').getData()
 #7 nodes, 1 per room
 simulatorCrownstones = [
 	#room7
-	SimulatorCrownstone(1, 5, 11),
+	SimulatorCrownstone(1, 4, 11),
 	#room6
 	SimulatorCrownstone(2, 6, 7),
   	#room1
-  	SimulatorCrownstone(3, 4, 2),
+  	SimulatorCrownstone(3, 4, 3),
   	#room3
 	SimulatorCrownstone(4, 12, 4),
 	#room2
-	SimulatorCrownstone(5, 6, 5),
+	SimulatorCrownstone(5, 8, 5),
 	#room5
-	SimulatorCrownstone(6, 11, 7),
+	SimulatorCrownstone(6, 12, 8),
 	#room4
 	SimulatorCrownstone(7, 14, 10),
 ]
@@ -98,7 +98,7 @@ b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 a.run()
-# a.startSimulation(225)
+#a.startSimulation(225)
 
 
 # # running without gui interaction:
