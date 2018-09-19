@@ -480,6 +480,10 @@ class SimulationGui(GuiCore):
         self.collectingStaticResults = False
         
         
+    def makeScreenshot(self, filename):
+        pygame.image.save(self.screen, filename)
+    
+        
 
     
 
