@@ -43,4 +43,5 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.sendMessage("I saw a beacon with more that -45 dB!" + str(rssi) + "   " + str(self.time))
 
         self.sendMessage("I measured something" + str(rssi) + "   " + str(self.time))
+
             

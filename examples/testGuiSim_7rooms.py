@@ -2,7 +2,7 @@
 # it does not have to do anything other than be imported.
 from util import path
 
-from examples.vikoData_7rooms.exampleCrownstones.SimulatorCrownstone import SimulatorCrownstone
+from examples.vikoData_7rooms.exampleCrownstones.SimulatorCrownstone_originalSender import SimulatorCrownstone
 from examples.vikoData_7rooms.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
 from simulator import SimulationGui, JsonFileStore, Simulator
 
@@ -97,38 +97,48 @@ b.loadCrownstones(simulatorCrownstones)
 b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
-a.run()
-#a.startSimulation(225)
 
 
-# # running without gui interaction:
-# a.initScreen()
-# a.render(a.screen)
-# a.calculateGroundTruthMap()
-# a.getStaticResults(False)
-# #
-# # results live in:
-# # print("truth map", a.groundTruthMap)
-# # print("result map", a.resultMap)
+# a.run()
+# a.startSimulation(220)
 
 
-# d1 = a.groundTruthMap
-# d2 = a.resultMap
-# counter = 0
-# correct = 0
 
-# for k1, v1 in d1.items():
-# 	if k1 in d2:
-# 	 	for v2 in d2[k1]:
-# 	 		for ck in v1.keys():
-# 	 			if ck in d2[k1]:
-# 	 				counter += 1
-# 	 				if (d1[k1][ck]==d2[k1][ck]):
-# 	 					correct += 1
+# running without gui interaction:
+a.initScreen()
+a.render(a.screen)
+a.calculateGroundTruthMap()
+a.getStaticResults(True)
 
-# print ("counter", counter)
-# print ("correct", correct)
-# accuracy = correct/counter * 100
-# print ('Accuracy: ' + repr(accuracy) + '%')
+#print(simulatorCrownstones[0].Map)
+count = 0
+for stone in simulatorCrownstones:
+	a.resultMap = stone.Map
+	a.render(a.screen)
+	a.makeScreenshot("cs_" + str(count) + "_ttl_4.png")
+	count += 1
+	d1 = a.groundTruthMap
+	d2 = a.resultMap
+	counter = 0
+	correct = 0
+	for k1, v1 in d1.items():
+		if k1 in d2:
+		 	for v2 in d2[k1]:
+		 		for ck in v1.keys():
+		 			if ck in d2[k1]:
+		 				counter += 1
+		 				if (d1[k1][ck]==d2[k1][ck]):
+		 					correct += 1
+	if (correct != 0):
+		accuracy = correct/counter * 100
+		print ("cs_" + str(count) + 'Accuracy_total: ' + repr(accuracy) + '%')
 			
+
+
+#
+# results live in:
+# print("truth map", a.groundTruthMap)
+# print("result map", a.resultMap)
+#print ("result map", Map)
+
 

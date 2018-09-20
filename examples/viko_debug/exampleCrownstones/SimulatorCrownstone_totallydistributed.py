@@ -38,7 +38,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.probabilities = []
         self.people = {}
         self.room_predicted=[]
-        self.dataset=[]
         self.room1, self.room2, self.room3 = [], [], []
 
     def print(data):
@@ -69,7 +68,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.publish = 0
             self.probabilities = {}
             self.room_predicted=[]
-            self.dataset=[]
         else:
             self.testSet = {}
             self.test_dataset = 0
@@ -89,7 +87,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.publish = 1
             self.probabilities = {}
             self.room_predicted=[]
-            self.dataset=[]
 
             
     # overloaded
@@ -176,35 +173,22 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.radiomap[self.label][self.id].append(rssi)
            
         if (self.flag == 2):
-            if (self.k == 0):
-                self.parameters = self.crownParameters(self.radiomap)
-                self.k = 1 
             self.counter = self.counter + 1
             if self.counter not in self.testSet:
                 self.testSet[self.counter]={}
             if self.id not in self.testSet[self.counter]:
                 self.testSet[self.counter][self.id]=[]
             self.testSet[self.counter][self.id].append(rssi) 
-            if self.w2%10 != 0 :
-                #print ("time", self.time)
-                self.dataset.append(self.testSet[self.counter][self.id][0])
-                self.w2 = self.w2 + 1
-                #print ("dataset", self.dataset)
-            else:
-                dataset_array = np.asarray(self.dataset)
-                mu, std = norm.fit(dataset_array)
-                #print ("mean", mu)
-                #print ("standard deviation", std)
-                self.dataset = []
-                self.probabilities[self.id]=self.Predictions_norm(self.parameters, self.test_dataset)
-                self.sendMessage(self.probabilities, 1)
 
-                self.w2 = self.w2 + 1
-
- 
+        if (self.flag == 2):
+            if (self.k == 0):
+                self.parameters = self.crownParameters(self.radiomap)
+                self.k = 1  
             #self.predictions = self.Predictions(self.parameters, self.testSet)
             #print ("testSet", self.testSet
-        
+            self.probabilities[self.id]=self.Predictions_norm(self.parameters, self.test_dataset)
+            self.sendMessage(self.probabilities, 1)
+
             #if self.id not in self.probabilities:
             #    self.probabilities[self.id]={}
             #if self.label not in self.probabilities:

@@ -28,6 +28,9 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.param=0
         self.timer=0
         self.k=0
+        self.w=0 
+        self.n=0
+        self.nodes = 4
 
     def print(data):
         if self.debugPrint:
@@ -61,12 +64,14 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.flag = 2
             self.publish = 1
             self.param = 0
+            self.sav = 0
 
             
     # overloaded
     def receiveMessage(self, data, rssi):
-        #print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
-
+        print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
+        self.t2 = self.time
+        print ("t2", self.t2)
         """
             This is where mesh messages are received
             :param data:  { "sender":string, "payload": dictionary }
@@ -90,33 +95,42 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     if data['payload']['originalSender'] not in self.radiomap[self.label]:
                         self.radiomap[self.label][data['payload']['originalSender']]=[]
                     self.radiomap[self.label][data['payload']['originalSender']].append(data['payload']['rssi'])
-                    
 
-        if (self.label==7 and self.flag==0 and self.param==1):
-            self.parameters = self.crownParameters(self.radiomap)
-            #I want to calculate the self.parameters only once
-            self.param=0
 
         if (self.flag == 2 and self.sign == 1):
             if self.param == 1: 
                 self.parameters = self.crownParameters(self.radiomap)
                 #I want to calculate the self.parameters only once
                 self.param=0
-            #print ("self.radiomap", self.radiomap)  
+            #print ("self.radiomap", self.radiomap)
+            if self.w==0 :
+                self.counter = self.counter +1
+                self.testSet[self.counter]={}
+                self.testSet[self.counter][self.id]=[-100]
             if 'rssi' in data['payload']:
                 if self.counter not in self.testSet:
                     self.testSet[self.counter]={}
-                if data["sender"] not in self.testSet[self.counter]:
-                    self.testSet[self.counter][data["sender"]]=[]
-                self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
-            self.predictions = self.Predictions(self.parameters, self.test_dataset)
-            #print ("predictions of room_label", self.predictions)
-            accuracy = self.Accuracy(self.test_dataset, self.predictions)
-            #print('Accuracy: ' + repr(accuracy) + '%')
+                if data['payload']['originalSender'] not in self.testSet[self.counter]:
+                    self.testSet[self.counter][data['payload']['originalSender']]=[]
+                self.testSet[self.counter][data['payload']['originalSender']].append(data['payload']['rssi'])
+                if self.id == 1: 
+                    print ("testSet", self.testSet)
+                if len(self.testSet[self.counter]) == self.nodes:
+                    self.w = 0
+                else:
+                    self.w=1
+                if self.id == 1:
+                    print ("testSet", self.testSet)    
+            self.predictions = self.Predictions(self.parameters, self.testSet)
+            print ("predictions of room_label", self.predictions)
+            accuracy = self.Accuracy(self.testSet, self.predictions)
+            print('Accuracy: ' + repr(accuracy) + '%')
 
     # overloaded
     def newMeasurement(self, data, rssi):
-        #print(self.time, self.id, "scans", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
+        print(self.time, self.id, "scans", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
+        self.t1 = self.time
+        print ("t1", self.t1)
         self.sendMessage({"rssi":rssi, "originalSender":self.id}, 5)
         if (self.flag == 1):
             if self.id not in self.radiomap[self.label]:
@@ -125,6 +139,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             #print ("self.radiomap", self.radiomap)
 
         if (self.flag == 2):
+            self.w = 1
             self.counter = self.counter + 1
             self.sign = 1
             if self.counter not in self.testSet:
@@ -132,6 +147,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             if self.id not in self.testSet[self.counter]:
                 self.testSet[self.counter][self.id]=[]
             self.testSet[self.counter][self.id].append(rssi)
+            
+
 
         # if (self.flag == 1):
         #     if 'rssi' in data['payload']:
@@ -294,7 +311,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
     def Accuracy(self, testSet, predictions):
         correct = 0
-        room= 5
+        room= 2
         for x in range(len(predictions)):
             if room == (predictions[x]):
                 correct += 1

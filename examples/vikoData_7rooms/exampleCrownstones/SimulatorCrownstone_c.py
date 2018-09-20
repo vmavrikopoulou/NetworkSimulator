@@ -4,14 +4,14 @@ import math
 import operator
 import string
 
-
 class SimulatorCrownstone(GuiCrownstoneCore):
     
     """
         Class variables are created here.
     """
     #myValue = False
-
+    
+    
     def __init__(self, id, x, y):
         super().__init__(id=id,x=x,y=y)
         #self.debugPrint = False
@@ -19,6 +19,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.radiomap = {}
         self.label= 0
         self.predictions={}
+        #self.predictions_norm={}
         self.testSet = {}
         self.counter = 0
         self.sign= 0
@@ -26,13 +27,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.n=0
         self.publish=0
         self.param=0
-        self.timer=0
-        self.k=0
-        self.w=0 
-        self.n=0
-        self.nodes = 7
-        self.Map = {}
-        self.count = 0
 
     def print(data):
         if self.debugPrint:
@@ -46,6 +40,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.radiomap ={}
             self.label= 0
             self.predictions={}
+            #self.predictions_norm={}
             self.testSet = {}
             self.counter = 0
             self.sign= 0
@@ -66,144 +61,101 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.publish = 1
             self.param = 0
 
-    
-
-
+            
     # overloaded
     def receiveMessage(self, data, rssi):
         #print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
+        """
+            This is where mesh messages are received
+            :param data:  { "sender":string, "payload": dictionary }
+        """
         if data["payload"] == "StartTraining" :
             self.label = self.label+1
             self.radiomap[self.label] = {}
             self.flag = 1
-        # When I receive "Start training" a flag informs the crownstones to start constructing their radio maps.
+        # When I receive "Start training" a flag informs the crownstone to start constructing their radio maps till a "Stop training" is received.
         if data["payload"] == "StopTraining" :
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
-            #the parameters (mean & standard deviation) to be calculated only once. flag: self.param
             self.param = 1
             self.flag = 2
-
-
-        # both the radio map construction and the testSet construction are held in both receiveMessage and newMeasurement functions
-        # as the radio map of each crownstone contains information (RSSI values) received from other crownstones. Either from all the crownstones
-        # in the mesh network (all crownstones have the same data - highest ttl - fully connected graph) or from only their neighbours (ttl=1 - not fully connected graph).
-        
+        # if data["payload"] == "StopLocalizing":
+        #     self.flag = 3
+    
         if (self.flag == 1):
-            #Construction of radiomap.
+            #the radio map of each crownstone contains information-RSSI values received from all crownstones.
             if 'rssi' in data['payload']:
-                if data['payload']['originalSender'] not in self.radiomap[self.label]:
-                    self.radiomap[self.label][data['payload']['originalSender']]=[]
-                self.radiomap[self.label][data['payload']['originalSender']].append(data['payload']['rssi'])
+                if data["sender"] not in self.radiomap[self.label]:
+                    self.radiomap[self.label][data["sender"]]=[]
+                self.radiomap[self.label][data["sender"]].append(data['payload']['rssi'])
+                #print ("self.radiomap", self.radiomap)
 
+
+        if (self.label==7 and self.flag==0 and self.param==1):
+            self.parameters = self.crownParameters(self.radiomap)
+            #I want to calculate the self.parameters only once
+            self.param=0
 
         if (self.flag == 2 and self.sign == 1):
-            #The parameters (mean & standard deviation) of each crownstone for each room is to be calculated only once.
-            if self.param == 1:
+            if self.param == 1: 
                 self.parameters = self.crownParameters(self.radiomap)
-                #Initialization of result map for every crownstone
-                self.Map = {}
-                for self.x in range (85, 735, 10):
-                    self.Map[self.x] = {}
-                    for self.y in range(85, 855, 10):
-                        self.Map[self.x][self.y] = None
+                #I want to calculate the self.parameters only once
                 self.param=0
-
-
-            if self.w==0 :
-                self.counter = self.counter +1
-                self.testSet[self.counter]={}
-                #for a complete testSet if a crownstone doesn't even scan the user, set RSSI to a really small value.
-                self.testSet[self.counter][self.id]=[-100]
-
-            #Construction of testSet, the original sender of the packet is received and saved to the set.
+            #print ("self.radiomap", self.radiomap)  
             if 'rssi' in data['payload']:
                 if self.counter not in self.testSet:
                     self.testSet[self.counter]={}
-                if data['payload']['originalSender'] not in self.testSet[self.counter]:
-                    self.testSet[self.counter][data['payload']['originalSender']]=[]
-                self.testSet[self.counter][data['payload']['originalSender']].append(data['payload']['rssi'])
-                
-                #check if the testSet is complete. The lenght of each row should be equal to the number of nodes in the mesh network.
-                if len(self.testSet[self.counter]) == self.nodes:
-                    self.w = 0
-                else:
-                    self.w=1
+                if data["sender"] not in self.testSet[self.counter]:
+                    self.testSet[self.counter][data["sender"]]=[]
+                self.testSet[self.counter][data["sender"]].append(data['payload']['rssi'])
+            print ("self.time", self.time)
+            print ("self.testSet", self.testSet)
+            self.predictions = self.Predictions(self.parameters, self.test_dataset)
+            #print ("Crownstone", self.id)
+            #print ("predictions of room_label", self.predictions)
+            accuracy = self.Accuracy(self.test_dataset, self.predictions)
+            #print('Accuracy: ' + repr(accuracy) + '%')
+            #predictions_norm = self.Predictions_norm(self.parameters, self.test_dataset) #norm_accuracy = self.Accuracy(self.test_dataset, predictions_norm)
 
-            if self.id == 1 :
-                print ("self.time", self.time)
-
-            if self.count == 5 :
-                if self.id == 1:
-                    print ("self time to make the prediction", self.time)
-                    print ("testSet", self.testSet)
-                self.count =0
-                self.predictions = self.Predictions(self.parameters, self.testSet)
-                if self.predictions[0] == 1:
-                    roomId = "Room 1"
-                elif self.predictions[0] == 2:
-                    roomId = "Room 2"
-                elif self.predictions[0] == 3:
-                    roomId = "Room 3"
-                elif self.predictions[0] == 4:
-                    roomId = "Room 4"
-                elif self.predictions[0] == 5:
-                    roomId = "Room 5"
-                elif self.predictions[0] == 6:
-                    roomId = "Room 6"
-                elif self.predictions[0] == 7:
-                    roomId = "Room 7"
-                if 'x' in self.debugInformation:
-                    x = int(self.debugInformation['x'])
-                    y = int(self.debugInformation['y'])
-                    for key, values in self.Map.items(): 
-                        if key == x:
-                            for ck in values.keys():
-                                if ck == y:
-                                    self.Map[key][ck]= roomId
-                accuracy = self.Accuracy(self.testSet, self.predictions)
-                #print('Accuracy: ' + repr(accuracy) + '%')
-            if self.id == 1:
-                self.count = self.count + 1
-
+    # overloaded
     def newMeasurement(self, data, rssi):
         #print(self.time, self.id, "scans", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
-        self.sendMessage({"rssi":rssi, "originalSender":self.id}, 5)
-
-        if (self.flag == 1):
-            #Construction of radio map
-            if self.id not in self.radiomap[self.label]:
-                self.radiomap[self.label][self.id]=[]
-            self.radiomap[self.label][self.id].append(rssi)
-
-        if (self.flag == 2):
-            #Construction of testSet. If the crownstone is able to scan the user the flag w is set to 1, otherwise it remains 0.
-            self.w = 1
-            self.counter = self.counter + 1
-            self.sign = 1
-            if self.counter not in self.testSet:
-                self.testSet[self.counter]={}
-            if self.id not in self.testSet[self.counter]:
-                self.testSet[self.counter][self.id]=[]
-            self.testSet[self.counter][self.id].append(rssi)
-
-
+        self.sendMessage({"rssi":rssi}, 1)
         # if (self.flag == 1):
-        #     if 'rssi' in data['payload']:
-        #         if self.id not in self.radiomap[self.label]:
-        #             self.radiomap[self.label][self.id]=[]
-        #         self.radiomap[self.label][self.id].append(data['payload']['rssi'])
+        #     if self.id not in self.radiomap[self.label]:
+        #         self.radiomap[self.label][self.id]=[]
+        #     self.radiomap[self.label][self.id].append(rssi)
         #     #print ("self.radiomap", self.radiomap)
 
         # if (self.flag == 2):
         #     self.counter = self.counter + 1
         #     self.sign = 1
-        #     if 'rssi' in data['payload']:
-        #         if self.counter not in self.testSet:
-        #             self.testSet[self.counter]={}
-        #         if self.id not in self.testSet[self.counter]:
-        #             self.testSet[self.counter][self.id]=[]
-        #         self.testSet[self.counter][self.id].append(data['payload']['rssi'])
+        #     if self.counter not in self.testSet:
+        #         self.testSet[self.counter]={}
+        #     if self.id not in self.testSet[self.counter]:
+        #         self.testSet[self.counter][self.id]=[]
+        #     self.testSet[self.counter][self.id].append(rssi)
+
+        if (self.flag == 1):
+            if 'rssi' in data['payload']:
+                if self.id not in self.radiomap[self.label]:
+                    self.radiomap[self.label][self.id]=[]
+                self.radiomap[self.label][self.id].append(data['payload']['rssi'])
+            #print ("self.radiomap", self.radiomap)
+
+        if (self.flag == 2):
+            self.counter = self.counter + 1
+            print ("counter", self.counter)
+            self.sign = 1
+            if 'rssi' in data['payload']:
+                if self.counter not in self.testSet:
+                    self.testSet[self.counter]={}
+                if self.id not in self.testSet[self.counter]:
+                    self.testSet[self.counter][self.id]=[]
+                self.testSet[self.counter][self.id].append(data['payload']['rssi'])
+            print ("self.time", self.time)
+            print ("self.testSet", self.testSet)
+
 
 
     def crownParameters(self, radiomap):
@@ -264,7 +216,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         predictions = []
         for counter in self.testSet:
             room_label = self.PredictRoom_norm(self.parameters, self.testSet[counter])
-            # self.publishResult(room_label)
+            self.publishResult(room_label)
             predictions.append(room_label)
         return predictions
 
@@ -383,3 +335,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     #            prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
     #            probabilities[self.label] *= prob_density
     #    return probabilities
+
+
+
+
+            
+
+
+
+
+            
