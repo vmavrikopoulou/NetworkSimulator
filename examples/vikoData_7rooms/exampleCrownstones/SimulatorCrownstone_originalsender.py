@@ -32,7 +32,11 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.n=0
         self.nodes = 7
         self.Map = {}
+        self.confidence_Map = {}
         self.count = 0
+        self.resetTrainingData = 0
+        self.timelimit = 0
+        self.probabilities = []
 
     def print(data):
         if self.debugPrint:
@@ -65,8 +69,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.flag = 2
             self.publish = 1
             self.param = 0
-
-    
+            self.timelimit = self.time
+            self.resetTrainingData = 1
 
 
     # overloaded
@@ -103,10 +107,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.parameters = self.crownParameters(self.radiomap)
                 #Initialization of result map for every crownstone
                 self.Map = {}
+                self.confidence_Map = {}
                 for self.x in range (85, 735, 10):
                     self.Map[self.x] = {}
+                    self.confidence_Map[self.x] = {}
                     for self.y in range(85, 855, 10):
                         self.Map[self.x][self.y] = None
+                        self.confidence_Map[self.x][self.y] = None
                 self.param=0
 
 
@@ -130,14 +137,11 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 else:
                     self.w=1
 
-            if self.id == 1 :
-                print ("self.time", self.time)
-
-            if self.count == 5 :
-                if self.id == 1:
-                    print ("self time to make the prediction", self.time)
-                    print ("testSet", self.testSet)
-                self.count =0
+            #make predictions after 1 sec
+            #the result map of each crownstone should be created after the crownstones have received the info from their neighbors 
+            if (self.time > self.timelimit+0.04 and self.resetTrainingData == 1) :
+                self.timelimit = self.timelimit+0.04
+                print ("timelimit", self.timelimit)
                 self.predictions = self.Predictions(self.parameters, self.testSet)
                 if self.predictions[0] == 1:
                     roomId = "Room 1"
@@ -161,14 +165,18 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                             for ck in values.keys():
                                 if ck == y:
                                     self.Map[key][ck]= roomId
+                    for key, values in self.confidence_Map.items():
+                        if key == x:
+                            for ck in values.keys():
+                                if ck == y:
+                                    self.confidence_Map[key][ck]= roomId
                 accuracy = self.Accuracy(self.testSet, self.predictions)
+                #print ("crownstone", self.id)
                 #print('Accuracy: ' + repr(accuracy) + '%')
-            if self.id == 1:
-                self.count = self.count + 1
 
     def newMeasurement(self, data, rssi):
         #print(self.time, self.id, "scans", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
-        self.sendMessage({"rssi":rssi, "originalSender":self.id}, 5)
+        self.sendMessage({"rssi":rssi, "originalSender":self.id}, 4)
 
         if (self.flag == 1):
             #Construction of radio map
@@ -276,6 +284,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             if room_predicted is None or probability > best_probability:
                 best_probability = probability
                 room_predicted = room_label
+        self.probabilities. append(best_probability)
         return room_predicted
 
     def PredictRoom_norm(self, parameters, testSet):

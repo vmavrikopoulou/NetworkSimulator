@@ -14,7 +14,7 @@
   "simulationPredefinedEndpoint": 0,
   "simulationBatchTimeStepSizeSeconds": 230,
   "trainingPhaseDurationSeconds": 220,
-  "simulationForMeasurementResultMaxSeconds":5,
+  "simulationForMeasurementResultMaxSeconds":100,
   "simulationTimeStepSeconds": 0.01,
 
   "viewWidthMeters": 18,

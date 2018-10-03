@@ -6,6 +6,7 @@ import string
 import numpy as np
 from scipy.stats import norm
 import numpy as np
+import numpy
 
 class SimulatorCrownstone(GuiCrownstoneCore):
     
@@ -39,7 +40,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.people = {}
         self.room_predicted=[]
         self.dataset=[]
-        self.room1, self.room2, self.room3 = [], [], []
+        self.room1, self.room2, self.room3, self.room4, self.room5, self.room6, self.room7 = [], [], [], [], [], [], []
 
     def print(data):
         if self.debugPrint:
@@ -109,29 +110,45 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         if data["payload"] == "StartLocalizing":
             self.flag = 2
             
-        if (self.flag == 2) and (self.id==2):
+        if (self.flag == 2) and (self.id==5):
             print ("Crownstone", self.id, "receives from Crownstone", data["sender"], "data", data["payload"], "and rssi", rssi)
             if self.w1 % 2 != 0:
-                self.room1, self.room2, self.room3 = [],[],[]
+                self.room1, self.room2, self.room3, self.room4, self.room5, self.room6, self.room7 = [],[],[],[],[],[],[]
             print ("selfw1", self.w1)
             if self.w1%2 != 0:
                 if self.id in self.probabilities:
                     self.room1.append(self.probabilities[self.id][1])
                     self.room2.append(self.probabilities[self.id][2])
                     self.room3.append(self.probabilities[self.id][3])
+                    self.room4.append(self.probabilities[self.id][4])
+                    self.room5.append(self.probabilities[self.id][5])
+                    self.room6.append(self.probabilities[self.id][6])
+                    self.room7.append(self.probabilities[self.id][7])
             for key in data['payload']:
-                if (key == 1 or key == 3 or key == 4):
+                if (key == 1 or key == 2 or key == 3 or key == 4 or key ==6 or key == 7):
                     self.room1.append(data['payload'][key][1])
                     self.room2.append(data['payload'][key][2])
                     self.room3.append(data['payload'][key][3])
+                    self.room4.append(data['payload'][key][4])
+                    self.room5.append(data['payload'][key][5])
+                    self.room6.append(data['payload'][key][6])
+                    self.room7.append(data['payload'][key][7])
                     if self.w1 % 2 == 0:
-                        prob1 = self.room1[-1] * self.room1[0] * self.room1[1]
+                        prob1 = numpy.prod(self.room1) 
                         print ("probability1", prob1) 
-                        prob2 = self.room2[-1] * self.room2[0] * self.room2[1]
+                        prob2 = numpy.prod(self.room2) 
                         print ("probability2", prob2) 
-                        prob3 = self.room3[-1] * self.room3[0] * self.room3[1]
-                        print ("probability3", prob3) 
-                        a = prob1 + prob2 + prob3
+                        prob3 = numpy.prod(self.room3) 
+                        print ("probability3", prob3)
+                        prob4 = numpy.prod(self.room4) 
+                        print ("probability4", prob4) 
+                        prob5 = numpy.prod(self.room5) 
+                        print ("probability5", prob5) 
+                        prob6 = numpy.prod(self.room6) 
+                        print ("probability6", prob6) 
+                        prob7 = numpy.prod(self.room7) 
+                        print ("probability7", prob7)
+                        a = prob1 + prob2 + prob3 + prob4 + prob5 + prob6 + prob7
                         print ("normalization_factor", a)
                         self.prob1 = prob1/a
                         print ("prob1", self.prob1)
@@ -139,6 +156,14 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                         print ("prob2", self.prob2)
                         self.prob3 = prob3/a
                         print ("prob3", self.prob3)
+                        self.prob4 = prob4/a
+                        print ("prob4", self.prob4)
+                        self.prob5 = prob5/a
+                        print ("prob5", self.prob5)
+                        self.prob6 = prob6/a
+                        print ("prob6", self.prob6)
+                        self.prob7 = prob7/a
+                        print ("prob7", self.prob7)
                         best_prob = self.prob1
                         room_pred = 1
                         if self.prob2 > best_prob :
@@ -147,12 +172,29 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                         if self.prob3 > best_prob:
                             best_prob = self.prob3
                             room_pred = 3
+                        if self.prob4 > best_prob:
+                            best_prob = self.prob4
+                            room_pred = 4
+                        if self.prob5 > best_prob:
+                            best_prob = self.prob5
+                            room_pred = 5
+                        if self.prob6 > best_prob:
+                            best_prob = self.prob6
+                            room_pred = 6
+                        if self.prob7 > best_prob:
+                            best_prob = self.prob7
+                            room_pred = 7
                         self.room_predicted.append(room_pred)
             self.w1=self.w1+1
             print ("room1", self.room1)
             print ("room2", self.room2)
             print ("room3", self.room3)
+            print ("room4", self.room4)
+            print ("room5", self.room5)
+            print ("room6", self.room6)
+            print ("room7", self.room7)
             print ("room_predicted", self.room_predicted)                    
+            
 
         # if (self.flag == 3 and self.n == 0) or (self.flag == 4):
         #     self.n=1
@@ -196,31 +238,10 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 #print ("standard deviation", std)
                 self.dataset = []
                 self.probabilities[self.id]=self.Predictions_norm(self.parameters, self.test_dataset)
-                self.sendMessage(self.probabilities, 1)
+                self.sendMessage(self.probabilities, 2)
 
                 self.w2 = self.w2 + 1
 
- 
-            #self.predictions = self.Predictions(self.parameters, self.testSet)
-            #print ("testSet", self.testSet
-        
-            #if self.id not in self.probabilities:
-            #    self.probabilities[self.id]={}
-            #if self.label not in self.probabilities:
-            #    self.probabilities[self.id][self.label]
-            #self.probabilities[self.id].append(probabilities)
-            
-            #if self.id == 2:
-            #    prob_dic =
-
-
-
-        #if (self.id == 2 and self.k ==1):
-        #    print ("Crownstone", self.id)
-        #    #print ("predictions of room_label", self.predictions)
-        #    #accuracy = self.Accuracy(self.test_dataset, self.predictions)
-        #    norm_accuracy = self.Accuracy(self.test_dataset, predictions_norm)
-        #    print('Accuracy: ' + repr(norm_accuracy) + '%')
 
     def crownParameters(self, radiomap):
         parameters={}

@@ -30,8 +30,11 @@ simulatorCrownstones = [
 	SimulatorCrownstone(7, 14, 10),
 ]
 
-# #10 nodes
+#11 nodes
+#cs1 = SimulatorCrownstone(1, 5, 11)
+#cs1.clusterdId = 1
 # simulatorCrownstones = [
+# #cs1,
 # 	#room7
 # 	SimulatorCrownstone(1, 5, 11),
 # 	#room6
@@ -52,7 +55,7 @@ simulatorCrownstones = [
 # 	SimulatorCrownstone(11, 2, 4)
 # ]
 
-# #20 nodes
+# #24 nodes
 # simulatorCrownstones = [
 # 	SimulatorCrownstone(1, 9, 10), # X, Y positions in meters relative to zeroPoint on Map
 # 	SimulatorCrownstone(2, 5, 11), # X, Y positions in meters relative to zeroPoint on Map
@@ -98,13 +101,11 @@ b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 
-
-# a.run()
 # a.startSimulation(220)
+# a.run()
 
 
-
-# running without gui interaction:
+#running without gui interaction:
 a.initScreen()
 a.render(a.screen)
 a.calculateGroundTruthMap()
