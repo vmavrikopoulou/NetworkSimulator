@@ -30,11 +30,11 @@ simulatorCrownstones = [
 	SimulatorCrownstone(7, 14, 10),
 ]
 
-#11 nodes
-#cs1 = SimulatorCrownstone(1, 5, 11)
-#cs1.clusterdId = 1
+# 11 nodes
+# cs1 = SimulatorCrownstone(1, 5, 11)
+# cs1.clusterdId = 1
 # simulatorCrownstones = [
-# #cs1,
+# 	#cs1,
 # 	#room7
 # 	SimulatorCrownstone(1, 5, 11),
 # 	#room6
@@ -52,7 +52,9 @@ simulatorCrownstones = [
 # 	SimulatorCrownstone(8, 2, 8),
 # 	SimulatorCrownstone(9, 15, 1),
 # 	SimulatorCrownstone(10, 14, 8),
-# 	SimulatorCrownstone(11, 2, 4)
+# 	SimulatorCrownstone(11, 2, 4),
+# 	SimulatorCrownstone(12, 9, 8),
+#  	SimulatorCrownstone(13, 2, 8),
 # ]
 
 # #24 nodes
@@ -111,15 +113,27 @@ a.render(a.screen)
 a.calculateGroundTruthMap()
 a.getStaticResults(True)
 
-#print(simulatorCrownstones[0].Map)
+			
+
+#create a map where the most accurate prediction among all crownstones will be saved
+c_map={}
+conf_map={}
+for x in range (85, 735, 10):
+    c_map[x] = {}
+    conf_map[x]={}
+    for y in range(85, 855, 10):
+        c_map[x][y] = None
+        conf_map[x][y] = None
+
 count = 0
 for stone in simulatorCrownstones:
 	a.resultMap = stone.Map
 	a.render(a.screen)
-	a.makeScreenshot("cs_" + str(count) + "_ttl_4.png")
+	#a.makeScreenshot("cs_" + str(count) + "_ttl_4.png")
 	count += 1
 	d1 = a.groundTruthMap
 	d2 = a.resultMap
+	d3 = stone.confidence_Map
 	counter = 0
 	correct = 0
 	for k1, v1 in d1.items():
@@ -127,19 +141,49 @@ for stone in simulatorCrownstones:
 		 	for v2 in d2[k1]:
 		 		for ck in v1.keys():
 		 			if ck in d2[k1]:
-		 				counter += 1
-		 				if (d1[k1][ck]==d2[k1][ck]):
-		 					correct += 1
-	if (correct != 0):
+		 				#I don't take into account the None labels (where no room corresponds) in the ground truth map
+		 				if (d1[k1][ck] != None):
+		 					counter += 1
+		 					#I compare the label of each result map of every crownstone with the label in ground truth map. I don't take into account the 
+		 					#none values where the room is not in the range of crownstone so it cannot make a room prediction.
+			 				if (d1[k1][ck]==d2[k1][ck]) and (d2[k1][ck] != None) :
+			 					correct += 1
+			 					c_map[k1][ck] = d1[k1][ck]
+			 					if (conf_map[k1][ck]== None):
+			 						conf_map[k1][ck] = d3[k1][ck]
+			 					else:
+			 						if (conf_map[k1][ck]<d3[k1][ck]):
+			 							conf_map[k1][ck] = d3[k1][ck]
+	if (correct != 0):	
 		accuracy = correct/counter * 100
 		print ("cs_" + str(count) + 'Accuracy_total: ' + repr(accuracy) + '%')
-			
+#print ("conf_map", conf_map)
+# print(simulatorCrownstones[0].Map)
+#print (simulatorCrownstones[0].confidence_Map)
+# the accuracy regarding the c_map that has all the best predictions of all crownstones
+# correct_1 = 0
+# d1 = a.groundTruthMap
+# d2 = c_map
+# counter_1 = 0
+# for k1, v1 in d1.items():
+# 	if k1 in d2:
+# 	 	for v2 in d2[k1]:
+# 	 		for ck in v1.keys():
+# 	 			if ck in d2[k1]:
+# 	 				counter_1 += 1
+# 	 				if (d1[k1][ck]==d2[k1][ck]):
+# 	 					correct_1 += 1
+# accuracy_2 = correct_1/counter_1 * 100
+# print ("Combined result map", c_map)
+# print ('Accuracy_cmap: ' + repr(accuracy_2) + '%')
 
 
-#
-# results live in:
-# print("truth map", a.groundTruthMap)
-# print("result map", a.resultMap)
-#print ("result map", Map)
+# #for nvalue=4.5:
+# # 7 crownstones in total, 1 crownstone_per_room, Accuracy_cmap: 94.02564102564102%
+# # 11 crownstones in total, Accuracy_cmap: 99.56410256410257%
+
+
+
+
 
 

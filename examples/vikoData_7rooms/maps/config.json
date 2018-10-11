@@ -1,6 +1,6 @@
 {
   "rssiCalibrationCrownstone": -60,
-  "nValueCrownstone": 5,
+  "nValueCrownstone": 4.5,
   "rssiMinimumCrownstone": -95,
 
   "rssiCalibrationUser": -60,
@@ -14,7 +14,7 @@
   "simulationPredefinedEndpoint": 0,
   "simulationBatchTimeStepSizeSeconds": 230,
   "trainingPhaseDurationSeconds": 220,
-  "simulationForMeasurementResultMaxSeconds":100,
+  "simulationForMeasurementResultMaxSeconds":20,
   "simulationTimeStepSeconds": 0.01,
 
   "viewWidthMeters": 18,
