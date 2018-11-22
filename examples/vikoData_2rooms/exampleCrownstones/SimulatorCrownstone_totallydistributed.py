@@ -1,3 +1,7 @@
+#Completely distributed algorithm. Every crownstone makes its local estimate and then it forwards to the central which 
+#uses the extension of Bayesian to combine the local estimates of its and its neighbors and publish the result about 
+#the location of the user. This algorithm was implemented 
+
 from simulator.simulatorBases.CrownstoneCore import CrownstoneCore
 from simulator.simulatorBases.GuiCrownstoneCore import GuiCrownstoneCore
 import math

@@ -409,7 +409,7 @@ class SimulationGui(GuiCore):
                     resultBroadcaster.setBroadcastParameters(intervalMs=self.userData["intervalMs"], payload=self.userData["payload"])
     
                     self.simulator.loadBroadcasters([resultBroadcaster])
-                    
+
                     def drawResult(roomId):
                         # store results
                         self.resultMap[x][y] = roomId
@@ -430,6 +430,7 @@ class SimulationGui(GuiCore):
         if render:
             self.render(self.screen, True)
         
+
 
     def getSingleStaticResult(self, render = True):
         self.calculateGroundTruthMap()
