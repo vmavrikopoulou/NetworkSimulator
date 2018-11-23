@@ -1,4 +1,4 @@
-import math, numpy
+import math, numpy, random
 
 class SimMath:
     
@@ -26,14 +26,14 @@ class SimMath:
         distance = SimMath.getDistance({"x":crownstonePos[0], "y": crownstonePos[1]}, sourcePos)
         rssiCalibration = self.gui.config["rssiCalibrationUser"]
         NValue = self.gui.config["nValueUser"]
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumUser"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumUser"], self.config["rssiNoiseFactor"])
 
 
     def getRssiFromCrownstone(self, crownstone, sourcePos):
         distance = SimMath.getDistance({"x":crownstone.pos[0], "y":crownstone.pos[1]}, sourcePos)
         rssiCalibration = self.gui.config["rssiCalibrationCrownstone"]
         NValue = self.gui.config["nValueCrownstone"]
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumCrownstone"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumCrownstone"], self.config["rssiNoiseFactor"])
 
 
     def getRssiToPosition(self, targetPos, sourcePos):
@@ -50,7 +50,7 @@ class SimMath:
         rssiCalibration = self.gui.config["rssiCalibrationUser"]
         NValue = self.gui.config["nValueUser"]
     
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumUser"])
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.gui.config["rssiMinimumUser"], self.config["rssiNoiseFactor"])
     
 
     def isPointInPath(self, x, y, poly):
@@ -71,10 +71,13 @@ class SimMath:
         return c
 
     @staticmethod
-    def getRSSI(calibration, NValue, distance, minRssi):
+    def getRSSI(calibration, NValue, distance, minRssi, noiseFactor):
         rssiMean = calibration - (10 * NValue) * math.log10(distance)
         # rssi = numpy.random.normal(rssiMean, std)
         if rssiMean < minRssi:
             return None
     
+        if noiseFactor > 0:
+            return random.normalvariate(rssiMean, noiseFactor*rssiMean)
+        
         return rssiMean

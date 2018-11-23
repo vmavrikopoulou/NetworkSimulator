@@ -3,7 +3,7 @@ from simulator.core.gui.SimMath import SimMath
 from simulator.topics.Topics import Topics
 from simulator.util.Enums import MessageState
 from simulator.util.EventBus import EventBus
-import uuid
+import uuid, random
 
 class SimulationCore:
     
@@ -182,6 +182,7 @@ class SimulationCore:
                 status = self.handleMessage(self.messages[mId])
                 if status == MessageState.DELIVERED:
                     relayMessages.append(mId)
+                    
                 if status != MessageState.DELAYED:
                     self.messages[mId]["processed"] = True
                     deleteList.append(mId)
@@ -221,7 +222,15 @@ class SimulationCore:
             # the ttl has been reduced by 1 since it has been sent once.
             self.receivedCounter += 1
             receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1}, rssi)
-        
+            
+            if random.random() < float(self.config["messageLossProbability"]):
+                message["repeat"] -= 1
+                if message["repeat"] < 0:
+                    return MessageState.FAILED
+                
+                return MessageState.DELAYED
+            
+            
             if message["ttl"] > 1:
                 return MessageState.DELIVERED
             else:
@@ -323,7 +332,9 @@ class SimulationCore:
         rssiCalibration = self.config["rssiCalibrationCrownstone"]
         NValue = self.config["nValueCrownstone"]
     
-        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimumCrownstone"])
+    
+        # there is no noise here to ensure that the topology is good.
+        return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimumCrownstone"], 0)
         
     
     

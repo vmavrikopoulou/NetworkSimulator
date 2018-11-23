@@ -7,6 +7,9 @@
   "nValueUser": 3,
   "rssiMinimumUser": -98,
 
+  "rssiNoiseFactor": 0.1,
+  "messageLossProbability": 0.25,
+
   "transmissionDelayInSeconds": 0.1,
 
   "simulateOutsideRooms": true,

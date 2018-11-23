@@ -473,7 +473,7 @@ class SimulationGui(GuiCore):
         if render:
             self.render(self.screen, True)
         else:
-            print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
+            print("PROGRESS",(i*yBlockCount) / (xBlockCount*yBlockCount))
 
 
         self.simulator.resetSimulatorForResults()
