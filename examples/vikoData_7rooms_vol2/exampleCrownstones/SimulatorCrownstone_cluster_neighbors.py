@@ -101,26 +101,20 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 else:
                     self.testSet[data['payload']['originalSender']][0] += data['payload']['rssi']
                     self.counter[data['payload']['originalSender']][0] += 1
-
-
-            if (self.time > self.timelimit_1+ 0.7): 
-                print ("Send my degree to my neighbors")
-                self.neighbors={}
                 degree = len(self.testSet) - 1
                 if self.id not in self.neighbors:
                     self.neighbors[self.id]=[]
-                self.neighbors[self.id].append(degree)
+                self.neighbors[self.id]=degree
                 self.sendMessage({"degree":degree}, 1)
 
             if 'degree' in data['payload']:
                 if data['sender'] not in self.neighbors:
                     self.neighbors[data['sender']]=[]
-                self.neighbors[data['sender']].append(data['payload']['degree'])
+                self.neighbors[data['sender']]= data['payload']['degree']
 
-            #print ("self.time", self.time, "neigbors", self.neighbors)
+            print ("self.id", self.id, "neigbors", self.neighbors)
 
-            if (self.time > self.timelimit_1 + 1 and self.w==1) :
-                print ("Start Clustering")
+            if (self.time > self.timelimit_1 + 1 and self.w==1):
                 self.timelimit_1 = self.time
                 #after my time limit I compute the average of the received RSSI values for myself and my neighbors.
                 new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
@@ -142,9 +136,9 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     self.probabilities[self.count][data['payload']['cluster_head']]=[]
                 self.probabilities[self.count][data['payload']['cluster_head']].append(data['payload']['probabilities'])
                 
-                if data['ttl'] == self.TTL_flood - 1:
-                    print ("I am a member of a cluster")
-                    self.member[self.id]= 1
+                # if data['ttl'] == self.TTL_flood - 1:
+                #     print ("I am a member of a cluster")
+                #     self.member[self.id]= 1
 
                 # what in case we receive for more than 1 cluster heads.. then one cluster head may be my head and another one outsider.
                 # if data['ttl']< self.TTL_flood - 1:
@@ -245,36 +239,23 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         return room
 
 
+    # Clustering method according to the degree of the nodes
     def Clustering(self, testSet):
-        values =[]
-        n, value_node = 0, -100
-        print ("testSet", testSet)
-        print ("crownstone", self.id)
+        print ("self.id", self.id)
         print ("self.neighbors", self.neighbors)
-        #create a list with the RSSI values, we are interested to compare the RSSI of the node itself (the RSSI of the self.id)
-        #with the other RSSI values of the list in order to elect the self.id as a cluster head or as a cluster member.
-        for node in testSet:
-            if self.id == node:
-                #the RSSI value of the node itself
-                value_node = testSet[node]
-            else:
-                values.append(testSet[node])
-    
-        for i in range(len(values)): 
-            if value_node > values[i]:
-                n = n+1 
-
-        #in order for the node to elect itself as a cluster head it should have the highest RSSI value among all its neighbors.
-        if n == len(values):
-            #to fix the bag for the testSet for node 6
+        n=0
+        node_degree = self.neighbors[self.id]
+        for node, degree in self.neighbors.items():
+            if node_degree >= degree:
+                n+=1
+        print ("n", n)
+        if n == len(self.neighbors):
             cluster_head = self.id
-            print ("cluster_head", cluster_head)
+            print ("cluster head", self.id)
         else:
-            #otherwise it elects itself as a member and waits for the header to make the calculations
             cluster_member = self.id
-            cluster_head = 0
-            print ("cluster_member", cluster_member)
-
+            cluster_head = 0 
+            print ("cluster member", self.id)
 
         if self.id == cluster_head:
             probabilities = self.RoomProbabilities_norm(self.parameters, testSet)
