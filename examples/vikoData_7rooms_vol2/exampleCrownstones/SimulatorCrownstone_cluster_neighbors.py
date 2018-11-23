@@ -103,7 +103,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     self.counter[data['payload']['originalSender']][0] += 1
 
 
-            if (self.time > self.timelimit_1+ 0.9): 
+            if (self.time > self.timelimit_1+ 0.7): 
+                print ("Send my degree to my neighbors")
                 self.neighbors={}
                 degree = len(self.testSet) - 1
                 if self.id not in self.neighbors:
@@ -111,15 +112,15 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.neighbors[self.id].append(degree)
                 self.sendMessage({"degree":degree}, 1)
 
-
             if 'degree' in data['payload']:
                 if data['sender'] not in self.neighbors:
                     self.neighbors[data['sender']]=[]
                 self.neighbors[data['sender']].append(data['payload']['degree'])
 
-            print ("self.time", self.time, "neigbors", self.neighbors)
+            #print ("self.time", self.time, "neigbors", self.neighbors)
 
             if (self.time > self.timelimit_1 + 1 and self.w==1) :
+                print ("Start Clustering")
                 self.timelimit_1 = self.time
                 #after my time limit I compute the average of the received RSSI values for myself and my neighbors.
                 new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
@@ -146,19 +147,16 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     self.member[self.id]= 1
 
                 # what in case we receive for more than 1 cluster heads.. then one cluster head may be my head and another one outsider.
-                if data['ttl']< self.TTL_flood - 1:
-                    if ((self.testSet[self.id][0]/self.counter[self.id][0]) > -87) and (self.member[self.id] == 0):
-                        print ("hallo crownstone", self.id, "ttl", data['ttl'], "rssi", self.testSet[self.id][0]/self.counter[self.id][0])
-                        print ("I am not a member of a cluster cos I have received packets with ttl < TTL_flood - 1 so I'll make my prediction")
-                        self.outsider[self.id]= 1
-                        new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
-                        print ("new_testSet", new_testSet)
-                        member_probabilities = self.RoomProbabilities_norm(self.parameters, new_testSet)
-                        member_predictions = self.PredictRoom_norm(member_probabilities)
-                        print ("member_predictions", member_predictions)
-
-
-
+                # if data['ttl']< self.TTL_flood - 1:
+                #     if ((self.testSet[self.id][0]/self.counter[self.id][0]) > -87) and (self.member[self.id] == 0):
+                #         print ("hallo crownstone", self.id, "ttl", data['ttl'], "rssi", self.testSet[self.id][0]/self.counter[self.id][0])
+                #         print ("I am not a member of a cluster cos I have received packets with ttl < TTL_flood - 1 so I'll make my prediction")
+                #         self.outsider[self.id]= 1
+                #         new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
+                #         print ("new_testSet", new_testSet)
+                #         member_probabilities = self.RoomProbabilities_norm(self.parameters, new_testSet)
+                #         member_predictions = self.PredictRoom_norm(member_probabilities)
+                #         print ("member_predictions", member_predictions)
 
 
             if (self.time > self.timelimit_2 + 2.5 and self.w ==1):

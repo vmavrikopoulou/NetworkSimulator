@@ -26,6 +26,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.nodes, self.rooms = 7, 7
         self.cluster, self.counter, self.neighbors ={}, {}, {}
         self.count = 1
+        self.TTL_flood = 5
 
     def print(self, data):
         if self.debugPrint:
@@ -42,6 +43,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.nodes, self.rooms = 7, 7
             self.cluster, self.counter, self.parameters ={}, {}, {}
             self.count, self.param = 1, 1
+            self.TTL_flood = 5
         else:
             self.predictions, self.testSet, self.probabilities, self.predictedroom = {}, {}, {}, {}
             self.publish, self.resetTrainingData, self.param = 1, 1, 1
@@ -52,19 +54,12 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.timelimit_1 = self.time
             self.timelimit_2 = self.time
             self.timelimit_3 = self.time
+            self.TTL_flood = 5
 
         # self.print ("resetTrainingData" + str(self.time))
 
 
     def tick(self, time):
-        if (self.time > self.timelimit_3 + 0.7 and self.resetTrainingData == 1 and self.w == 1):
-            degree = len(self.testSet)
-            self.neighbors = {}
-            if self.id not in self.neighbors
-                self.neighbors[self.id] = []
-            self.neighbors[self.id].append(degree)
-            self.sendMessage({"degree":len(self.testSet)}, 1)
-
         if (self.time > self.timelimit_1 + 1 and self.resetTrainingData == 1 and self.w==1) :
             # print ("crownstone", self.id)
             # print ("timelimit_1", self.timelimit_1)
@@ -94,9 +89,10 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                             n = 1
                         else:
                             rooms.append(room[0])
-
-                        for i in range (len(rooms)):
-                            if room_label == room[i]:
+                        print ("rooms", rooms)
+                        print ("lenght of rooms", len(rooms))
+                        for i in range(0, len(rooms)):
+                            if room_label == rooms[i]:
                                 n +=1
                     if n == k :
                         print ("cluster heads made the same prediction so we can just update our state with the final prediction")
@@ -194,11 +190,16 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 else:
                     self.testSet[data['payload']['originalSender']][0] += data['payload']['rssi']
                     self.counter[data['payload']['originalSender']][0] += 1
+                degree = len(self.testSet) - 1
+                if self.id not in self.neighbors:
+                    self.neighbors[self.id]=[]
+                self.neighbors[self.id]=degree
+                self.sendMessage({"degree":degree}, 1)
 
             if 'degree' in data['payload']:
                 if data['sender'] not in self.neighbors:
                     self.neighbors[data['sender']]=[]
-                self.neighbors[data['sender']].append(data['payload']['degree'])
+                self.neighbors[data['sender']]= data['payload']['degree']
 
 
             if 'predictions' in data['payload']:
@@ -247,33 +248,21 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
 
     def Clustering(self, testSet):
-        values =[]
-        n, value_node = 0, -100
-        print ("testSet", testSet)
-        #create a list with the RSSI values, we are interested to compare the RSSI of the node itself (the RSSI of the self.id)
-        #with the other RSSI values of the list in order to elect the self.id as a cluster head or as a cluster member.
-        for node in testSet:
-            if self.id == node:
-                #the RSSI value of the node itself
-                value_node = testSet[node]
-            else:
-                values.append(testSet[node])
-    
-        for i in range(len(values)): 
-            if value_node > values[i]:
-                n = n+1 
-
-        #in order for the node to elect itself as a cluster head it should have the highest RSSI value among all its neighbors.
-        if n == len(values):
-            #to fix the bag for the testSet for node 6
+        print ("self.id", self.id)
+        print ("self.neighbors", self.neighbors)
+        n=0
+        node_degree = self.neighbors[self.id]
+        for node, degree in self.neighbors.items():
+            if node_degree >= degree:
+                n+=1
+        print ("n", n)
+        if n == len(self.neighbors):
             cluster_head = self.id
-            print ("cluster_head", cluster_head)
+            print ("cluster head", self.id)
         else:
-            #otherwise it elects itself as a member and waits for the header to make the calculations
             cluster_member = self.id
-            cluster_head = 0
-            print ("cluster_member", cluster_member)
-
+            cluster_head = 0 
+            print ("cluster member", self.id)
 
         if self.id == cluster_head:
             probabilities = self.RoomProbabilities_norm(self.parameters, testSet)
@@ -286,7 +275,9 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.predictedroom[self.count][self.id]=[]
             self.predictedroom[self.count][self.id].append(predictions)
             self.count = self.count - 1
-            self.sendMessage({"predictions":predictions, "probabilities":probabilities, "cluster_head":self.id }, 10)
+            self.sendMessage({"predictions":predictions, "probabilities":probabilities, "cluster_head":self.id }, self.TTL_flood)
+
+
 
 
     def newMeasurement(self, data, rssi):

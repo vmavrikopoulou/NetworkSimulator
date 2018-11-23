@@ -2,7 +2,7 @@
 # it does not have to do anything other than be imported.
 from util import path
 
-from examples.vikoData_7rooms.exampleCrownstones.SimulatorCrownstone_cluster_neighbors import SimulatorCrownstone
+from examples.vikoData_7rooms.exampleCrownstones.SimulatorCrownstone_cluster_neighbors_staticResults import SimulatorCrownstone
 from examples.vikoData_7rooms.exampleInteractionModules.TrainingAndTesting import TrainingAndTesting
 from simulator import SimulationGui, JsonFileStore, Simulator
 
@@ -105,38 +105,38 @@ b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 #a.run()
-a.startSimulation(222)
+# a.startSimulation(222)
 
 
 
 #running without gui interaction:
-# a.initScreen()
-# a.render(a.screen)
-# a.calculateGroundTruthMap()
-# a.getStaticResults(True)
+a.initScreen()
+a.render(a.screen)
+a.calculateGroundTruthMap()
+a.getStaticResults(True)
 
-# print("truth map", a.groundTruthMap)
-# print("result map", a.resultMap)
+print("truth map", a.groundTruthMap)
+print("result map", a.resultMap)
 
 
-# #compare result map with ground Truth map
-# d1 = a.groundTruthMap
-# d2 = a.resultMap
-# counter = 0
-# correct = 0
-# for k1, v1 in d1.items():
-# 	if k1 in d2:
-# 	 	for v2 in d2[k1]:
-# 	 		for ck in v1.keys():
-# 	 			if ck in d2[k1]:
-# 	 				if (d1[k1][ck]!=None):
-# 	 					counter += 1
-# 	 					if (d1[k1][ck] == d2[k1][ck]):
-# 	 						correct += 1
-# print ("counter", counter)
-# print ("correct", correct)
-# accuracy = correct/counter * 100
-# print ('Accuracy: ' + repr(accuracy) + '%')			
+#compare result map with ground Truth map
+d1 = a.groundTruthMap
+d2 = a.resultMap
+counter = 0
+correct = 0
+for k1, v1 in d1.items():
+	if k1 in d2:
+	 	for v2 in d2[k1]:
+	 		for ck in v1.keys():
+	 			if ck in d2[k1]:
+	 				if (d1[k1][ck]!=None):
+	 					counter += 1
+	 					if (d1[k1][ck] == d2[k1][ck]):
+	 						correct += 1
+print ("counter", counter)
+print ("correct", correct)
+accuracy = correct/counter * 100
+print ('Accuracy: ' + repr(accuracy) + '%')			
 
 
 # #create a map where the most accurate prediction among all crownstones will be saved
