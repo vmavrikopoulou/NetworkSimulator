@@ -26,6 +26,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.nodes, self.rooms = 7, 7
         self.cluster, self.counter ={}, {}
         self.count = 1
+        self.TTL_flood = 5
+        self.member, self.outsider = 0, 0
 
     def print(self, data):
         if self.debugPrint:
@@ -42,6 +44,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.nodes, self.rooms = 7, 7
             self.cluster, self.counter, self.parameters ={}, {}, {}
             self.count, self.param = 1, 1
+            self.TTL_flood = 10
         else:
             self.predictions, self.testSet, self.probabilities, self.predictedroom = {}, {}, {}, {}
             self.publish, self.resetTrainingData, self.param = 1, 1, 1
@@ -51,6 +54,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.flag = 2
             self.timelimit_1 = self.time
             self.timelimit_2 = self.time
+            self.TTL_flood = 10
+            self.member, self.outsider = 0, 0
 
         # self.print ("resetTrainingData" + str(self.time))
 
@@ -75,78 +80,152 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             print ("predictedroom", self.predictedroom)
             print ("probabilities", self.probabilities)
             for count, predictions in self.predictedroom.items():
-                if len(predictions) > 1:
-                    n, k = 0, 0
-                    rooms =[]
-                    for head, room in predictions.items():
-                        if n == 0:
-                            room_label = room[0]
-                            k = len(predictions)
-                            n = 1
+                if self.id == self.outsider:
+                    if len(predictions)> 1:
+                        n, k = 0, 0
+                        rooms =[]
+                        for head, room in predictions.items():
+                            if n == 0:
+                                room_label = room[0]
+                                k = len(predictions)
+                                n = 1
+                            else:
+                                rooms.append(room[0])
+                            for i in range (len(rooms)):
+                                if room_label == room[i]:
+                                    n +=1
+                        if (n == k) and (room_label == self.outsider_predictions):
+                            print ("cluster heads made the same prediction so we can just update our state with the final prediction")
+                            print ("final prediction", room[0])
+                            if self.publish == 1:
+                                if room[0] == 1:
+                                    self.publishResult("Room 1")
+                                elif room[0] == 2:
+                                    self.publishResult("Room 2")
+                                elif room[0] == 3:
+                                    self.publishResult("Room 3")
+                                elif room[0] == 4:
+                                    self.publishResult("Room 4")
+                                elif room[0] == 5:
+                                    self.publishResult("Room 5")
+                                elif room[0] == 6:
+                                    self.publishResult("Room 6")
+                                elif room[0] == 7:
+                                    self.publishResult("Room 7")
                         else:
-                            rooms.append(room[0])
-
-                        for i in range (len(rooms)):
-                            if room_label == room[i]:
-                                n +=1
-                        print ("time", self.time)
-                        print ("room_label", room_label)
-                        print ("rooms", rooms)
-                        print ("n",n)
-                    if n == k :
-                        print ("cluster heads made the same prediction so we can just update our state with the final prediction")
-                        if self.publish == 1:
-                            if room[0] == 1:
-                                self.publishResult("Room 1")
-                            elif room[0] == 2:
-                                self.publishResult("Room 2")
-                            elif room[0] == 3:
-                                self.publishResult("Room 3")
-                            elif room[0] == 4:
-                                self.publishResult("Room 4")
-                            elif room[0] == 5:
-                                self.publishResult("Room 5")
-                            elif room[0] == 6:
-                                self.publishResult("Room 6")
-                            elif room[0] == 7:
-                                self.publishResult("Room 7")
+                            print ("cluster heads didn't make the same prediction")
+                            self.predictedroom[count][self.id]=[]
+                            self.probabilities[count][self.id]=[]
+                            self.predictedroom[count][self.id].append(self.outsider_predictions)
+                            self.probabilities[count][self.id].append(self.outsider_probabilities)
+                            final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
+                            if self.publish == 1:
+                                if final_prediction == 1:
+                                    self.publishResult("Room 1")
+                                elif final_prediction == 2:
+                                    self.publishResult("Room 2")
+                                elif final_prediction == 3:
+                                    self.publishResult("Room 3")
+                                elif final_prediction == 4:
+                                    self.publishResult("Room 4")
+                                elif final_prediction == 5:
+                                    self.publishResult("Room 5")
+                                elif final_prediction == 6:
+                                    self.publishResult("Room 6")
+                                elif final_prediction == 7:
+                                    self.publishResult("Room 7")
                     else:
-                        print ("cluster heads didn't make the same prediction")
-                        final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
-                        if self.publish == 1:
-                            if final_prediction == 1:
-                                self.publishResult("Room 1")
-                            elif final_prediction == 2:
-                                self.publishResult("Room 2")
-                            elif final_prediction == 3:
-                                self.publishResult("Room 3")
-                            elif final_prediction == 4:
-                                self.publishResult("Room 4")
-                            elif final_prediction == 5:
-                                self.publishResult("Room 5")
-                            elif final_prediction == 6:
-                                self.publishResult("Room 6")
-                            elif final_prediction == 7:
-                                self.publishResult("Room 7")
-                else:
-                    print ("only one cluster head")
-                    for head, room in predictions.items():
-                        room_label = room[0]
-                        if self.publish == 1:
-                            if room_label == 1:
-                                self.publishResult("Room 1")
-                            elif room_label == 2:
-                                self.publishResult("Room 2")
-                            elif room_label == 3:
-                                self.publishResult("Room 3")
-                            elif room_label == 4:
-                                self.publishResult("Room 4")
-                            elif room_label == 5:
-                                self.publishResult("Room 5")
-                            elif room_label == 6:
-                                self.publishResult("Room 6")
-                            elif room_label == 7:
-                                self.publishResult("Room 7")
+                        print ("only one cluster head")
+                        for head, room in predictions.items():
+                            room_label = room[0]
+                            if self.publish == 1:
+                                if room_label == 1:
+                                    self.publishResult("Room 1")
+                                elif room_label == 2:
+                                    self.publishResult("Room 2")
+                                elif room_label == 3:
+                                    self.publishResult("Room 3")
+                                elif room_label == 4:
+                                    self.publishResult("Room 4")
+                                elif room_label == 5:
+                                    self.publishResult("Room 5")
+                                elif room_label == 6:
+                                    self.publishResult("Room 6")
+                                elif room_label == 7:
+                                    self.publishResult("Room 7")
+                else: 
+                    if len(predictions) > 1:
+                        n, k = 0, 0
+                        rooms =[]
+                        for head, room in predictions.items():
+                            if n == 0:
+                                room_label = room[0]
+                                k = len(predictions)
+                                n = 1
+                            else:
+                                rooms.append(room[0])
+
+                            for i in range (len(rooms)):
+                                if room_label == room[i]:
+                                    n +=1
+                            print ("time", self.time)
+                            print ("room_label", room_label)
+                            print ("rooms", rooms)
+                            print ("n",n)
+                        if n == k :
+                            print ("cluster heads made the same prediction so we can just update our state with the final prediction")
+                            if self.publish == 1:
+                                if room[0] == 1:
+                                    self.publishResult("Room 1")
+                                elif room[0] == 2:
+                                    self.publishResult("Room 2")
+                                elif room[0] == 3:
+                                    self.publishResult("Room 3")
+                                elif room[0] == 4:
+                                    self.publishResult("Room 4")
+                                elif room[0] == 5:
+                                    self.publishResult("Room 5")
+                                elif room[0] == 6:
+                                    self.publishResult("Room 6")
+                                elif room[0] == 7:
+                                    self.publishResult("Room 7")
+                        else:
+                            print ("cluster heads didn't make the same prediction")
+                            final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
+                            if self.publish == 1:
+                                if final_prediction == 1:
+                                    self.publishResult("Room 1")
+                                elif final_prediction == 2:
+                                    self.publishResult("Room 2")
+                                elif final_prediction == 3:
+                                    self.publishResult("Room 3")
+                                elif final_prediction == 4:
+                                    self.publishResult("Room 4")
+                                elif final_prediction == 5:
+                                    self.publishResult("Room 5")
+                                elif final_prediction == 6:
+                                    self.publishResult("Room 6")
+                                elif final_prediction == 7:
+                                    self.publishResult("Room 7")
+                    else:
+                        print ("only one cluster head")
+                        for head, room in predictions.items():
+                            room_label = room[0]
+                            if self.publish == 1:
+                                if room_label == 1:
+                                    self.publishResult("Room 1")
+                                elif room_label == 2:
+                                    self.publishResult("Room 2")
+                                elif room_label == 3:
+                                    self.publishResult("Room 3")
+                                elif room_label == 4:
+                                    self.publishResult("Room 4")
+                                elif room_label == 5:
+                                    self.publishResult("Room 5")
+                                elif room_label == 6:
+                                    self.publishResult("Room 6")
+                                elif room_label == 7:
+                                    self.publishResult("Room 7")
 
 
     def receiveMessage(self, data, rssi):
@@ -203,6 +282,24 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if data['payload']['cluster_head'] not in self.probabilities[self.count]:
                     self.probabilities[self.count][data['payload']['cluster_head']]=[]
                 self.probabilities[self.count][data['payload']['cluster_head']].append(data['payload']['probabilities'])
+
+                if data['ttl'] == self.TTL_flood - 1 and self.w == 1:
+                    self.member = self.id 
+                    self.outsider = 0
+
+                # a node may be not a part of any cluster if receives messages with ttl only smaller than TTL_flood-1
+                if data['ttl']< self.TTL_flood - 1 and self.id != self.member and self.w == 1 :
+                    #then this node can participate in the overall estimate if it has a strong RSSI value, for example larger than -87dB
+                    if ((self.testSet[self.id][0]/self.counter[self.id][0]) > -87):
+                        print ("crownstone", self.id, "ttl", data['ttl'], "rssi", self.testSet[self.id][0]/self.counter[self.id][0])
+                        self.outsider = self.id
+                        print ("I am not a member of a cluster cos I have received packets with ttl < TTL_flood - 1 so I'll make my prediction") 
+                        new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
+                        print ("new_testSet", new_testSet)
+                        self.outsider_probabilities = self.RoomProbabilities_norm(self.parameters, new_testSet)
+                        self.outsider_predictions = self.PredictRoom_norm(self.outsider_probabilities)
+                        print ("outsider_predictions", self.outsider_predictions)
+                        print ("outsider_probabilities", self.outsider_probabilities)
             
        
     def FinalPredictions(self, predictions, probabilities):
@@ -274,7 +371,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.predictedroom[self.count][self.id]=[]
             self.predictedroom[self.count][self.id].append(predictions)
             self.count = self.count - 1
-            self.sendMessage({"predictions":predictions, "probabilities":probabilities, "cluster_head":self.id }, 10)
+            self.sendMessage({"predictions":predictions, "probabilities":probabilities, "cluster_head":self.id }, self.TTL_flood)
 
 
     def newMeasurement(self, data, rssi):

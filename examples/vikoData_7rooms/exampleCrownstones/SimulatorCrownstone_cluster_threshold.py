@@ -27,7 +27,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.cluster, self.counter ={}, {}
         self.count = 1
         self.TTL_flood = 5
-        self.member, self.outsider = {}, {}
+        self.member, self.outsider = 0, 0
 
     def print(self, data):
         if self.debugPrint:
@@ -57,8 +57,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         # self.print ("resetTrainingData" + str(self.time))
 
 
-
-
     def receiveMessage(self, data, rssi):
         if data["payload"] == "StartTraining" :
             self.label = self.label+1
@@ -83,11 +81,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if data['payload']['originalSender'] not in self.radiomap[self.label]:
                     self.radiomap[self.label][data['payload']['originalSender']]=[]
                 self.radiomap[self.label][data['payload']['originalSender']].append(data['payload']['rssi'])  
-            self.member[self.id] = 0
-            self.outsider[self.id] = 0
-
                             
-        
         if (self.flag == 2):
             if self.param == 1:
                 self.parameters = self.crownParameters(self.radiomap)
@@ -112,7 +106,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.count = self.count + 1
                 
 
-
             if 'predictions' in data['payload']:
                 if self.count not in self.predictedroom:
                     self.predictedroom[self.count]={}
@@ -127,22 +120,22 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.probabilities[self.count][data['payload']['cluster_head']].append(data['payload']['probabilities'])
                 
                 if data['ttl'] == self.TTL_flood - 1:
-                    print ("I am a member of a cluster")
-                    self.member[self.id]= 1
+                    self.member = self.id 
+                    self.outsider = 0
 
-                # what in case we receive for more than 1 cluster heads.. then one cluster head may be my head and another one outsider.
-                if data['ttl']< self.TTL_flood - 1:
-                    if ((self.testSet[self.id][0]/self.counter[self.id][0]) > -87) and (self.member[self.id] == 0):
-                        print ("hallo crownstone", self.id, "ttl", data['ttl'], "rssi", self.testSet[self.id][0]/self.counter[self.id][0])
-                        print ("I am not a member of a cluster cos I have received packets with ttl < TTL_flood - 1 so I'll make my prediction")
-                        self.outsider[self.id]= 1
+                # a node may be not a part of any cluster if receives messages with ttl only smaller than TTL_flood-1
+                if data['ttl']< self.TTL_flood - 1 and self.id != self.member:
+                    #then this node can participate in the overall estimate if it has a strong RSSI value, for example larger than -87dB
+                    if ((self.testSet[self.id][0]/self.counter[self.id][0]) > -87):
+                        print ("crownstone", self.id, "ttl", data['ttl'], "rssi", self.testSet[self.id][0]/self.counter[self.id][0])
+                        self.outsider = self.id
+                        print ("I am not a member of a cluster cos I have received packets with ttl < TTL_flood - 1 so I'll make my prediction") 
                         new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
                         print ("new_testSet", new_testSet)
-                        member_probabilities = self.RoomProbabilities_norm(self.parameters, new_testSet)
-                        member_predictions = self.PredictRoom_norm(member_probabilities)
-                        print ("member_predictions", member_predictions)
-
-
+                        self.outsider_probabilities = self.RoomProbabilities_norm(self.parameters, new_testSet)
+                        self.outsider_predictions = self.PredictRoom_norm(self.outsider_probabilities)
+                        print ("outsider_predictions", self.outsider_predictions)
+                        print ("outsider_probabilities", self.outsider_probabilities)
 
 
 
@@ -152,55 +145,74 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 # print ("predictedroom", self.predictedroom)
                 # print ("probabilities", self.probabilities)
                 for count, predictions in self.predictedroom.items():
-                    if len(predictions) > 1:
-                        n, k = 0, 0
-                        rooms =[]
-                        for head, room in predictions.items():
-                            if n == 0:
-                                room_label = room[0]
-                                k = len(predictions)
-                                n = 1
+                    if self.id == self.outsider:
+                        if len(predictions)> 1:
+                            n, k = 0, 0
+                            rooms =[]
+                            for head, room in predictions.items():
+                                if n == 0:
+                                    room_label = room[0]
+                                    k = len(predictions)
+                                    n = 1
+                                else:
+                                    rooms.append(room[0])
+
+                                for i in range (len(rooms)):
+                                    if room_label == room[i]:
+                                        n +=1
+                            if (n == k) and (room_label == self.outsider_predictions):
+                                print ("cluster heads made the same prediction so we can just update our state with the final prediction")
+                                print ("final prediction", room[0])
                             else:
-                                rooms.append(room[0])
-
-                            for i in range (len(rooms)):
-                                if room_label == room[i]:
-                                    n +=1
-                        if n == k :
-                            print ("cluster heads made the same prediction so we can just update our state with the final prediction")
-                            print ("final prediction", room[0])
+                                print ("cluster heads didn't make the same prediction")
+                                self.predictedroom[count][self.id]=[]
+                                self.probabilities[count][self.id]=[]
+                                self.predictedroom[count][self.id].append(self.outsider_predictions)
+                                self.probabilities[count][self.id].append(self.outsider_probabilities)
+                                final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
+                                print ("final prediction", final_prediction)
                         else:
-                            print ("cluster heads didn't make the same prediction")
-                            final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
-                            print ("final prediction", final_prediction)
-                    else:
-                        print ("only one cluster head")
-                        for head, room in predictions.items():
-                            room_label = room[0]
-                            print ("final prediction", room_label)
+                            print ("only one cluster head")
+                            for head, room in predictions.items():
+                                room_label = room[0]
+                                if room_label == self.outsider_predictions:
+                                    print ("final prediction", room_label)
+                                else:
+                                    print ("outsider has different prediction from cluster head")
+                                    self.predictedroom[count][self.id]=[]
+                                    self.probabilities[count][self.id]=[]
+                                    self.predictedroom[count][self.id].append(self.outsider_predictions)
+                                    self.probabilities[count][self.id].append(self.outsider_probabilities)
+                                    final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
+                                    print ("final prediction", final_prediction)
 
-            
+                    else: 
+                        if len(predictions) > 1:
+                            n, k = 0, 0
+                            rooms =[]
+                            for head, room in predictions.items():
+                                if n == 0:
+                                    room_label = room[0]
+                                    k = len(predictions)
+                                    n = 1
+                                else:
+                                    rooms.append(room[0])
 
-        # if (self.time > self.timelimit_1 + 1) and (self.flag==2) and (self.w==1):
-        #     #after my time limit I compute the average of the received RSSI values for myself and my neighbors.
-        #     new_testSet={}
-        #     #take the average of the measurements I have received
-        #     #now there is no noise, so average is ok. later we should cut the outliers. norm.fit to compute both mean and standard deviation
-        #     #print ("result", result)
-        #     # for node in self.testSet:
-        #     #     for crown in self.counter:
-        #     #         if node not in new_testSet.items():
-        #     #             new_testSet[node] = []
-        #     #             result = {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
-        #     #         new_testSet[node].append(result)
-        #     #         print (self.testSet[node][0])
-        #     #         print (self.counter[crown][0])
-
-        #     new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
-        #     #Only nodes that have already scanned the user can participate in the clustering 
-        #     self.Clustering(new_testSet)
-        #     self.count = self.count + 1
-        #     self.timelimit_1 = self.time
+                                for i in range (len(rooms)):
+                                    if room_label == room[i]:
+                                        n +=1
+                            if n == k :
+                                print ("cluster heads made the same prediction so we can just update our state with the final prediction")
+                                print ("final prediction", room[0])
+                            else:
+                                print ("cluster heads didn't make the same prediction")
+                                final_prediction = self.FinalPredictions(self.predictedroom[count], self.probabilities[count])
+                                print ("final prediction", final_prediction)
+                        else:
+                            print ("only one cluster head")
+                            for head, room in predictions.items():
+                                room_label = room[0]
+                                print ("final prediction", room_label)
 
 
        
@@ -252,7 +264,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
         #in order for the node to elect itself as a cluster head it should have the highest RSSI value among all its neighbors.
         if n == len(values):
-            #to fix the bag for the testSet for node 6
             cluster_head = self.id
             print ("cluster_head", cluster_head)
         else:
