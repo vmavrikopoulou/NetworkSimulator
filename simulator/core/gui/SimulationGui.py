@@ -398,7 +398,7 @@ class SimulationGui(GuiCore):
                     counter += 1
 
                     for crownstone in self.simulatorCrownstones:
-                        crownstone.debugInformation = {"x":x, "y":y}
+                        crownstone.debugInformation = {"x": x, "y": y}
     
                     self.resultMap[x][y] = None
                     posInMeters = self.xyPixelsToMeters((x,y))
@@ -422,7 +422,7 @@ class SimulationGui(GuiCore):
                         if counter%15 == 0:
                             self.render(self.screen, True)
                     else:
-                        print("PROGRESS",(i*yBlockCount)/(xBlockCount*yBlockCount))
+                        print("PROGRESS", (i*yBlockCount)/(xBlockCount*yBlockCount))
 
 
         self.simulator.resetSimulatorForResults()

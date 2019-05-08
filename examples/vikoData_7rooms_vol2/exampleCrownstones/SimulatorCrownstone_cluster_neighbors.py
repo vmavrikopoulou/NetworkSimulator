@@ -17,14 +17,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     #myValue = False
 
     def __init__(self, id, x, y):
-        super().__init__(id=id,x=x,y=y)
+        super().__init__(id=id, x=x, y=y)
         #self.debugPrint = False
-        self.flag, self.label, self.param, self.value= 0, 0, 0, 0 
+        self.flag, self.label, self.calc_stat, self.value = 0, 0, 0, 0
         self.radiomap, self.predictions, self.testSet, self.probabilities, self.predictedroom = {}, {}, {}, {}, {}
         self.w, self.publish, self.resetTrainingData, self.timelimit_1, self.timelimit_2, self.timelimit_3 = 0, 0, 0, 0, 0, 0
-        self.Map, self.confidence_Map = {}, {}
-        self.nodes, self.rooms = 11, 7
-        self.cluster, self.counter ={}, {}
+        self.nodes, self.rooms = 24, 7
+        self.cluster, self.counter = {}, {}
         self.count = 1
         self.TTL_flood = 5
         self.member, self.outsider, self.neighbors = {}, {}, {}
@@ -33,88 +32,62 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         if self.debugPrint:
             print(data)
 
-
-    def resetState(self, resetTrainingData):
-        #This is an important method to reset any state the Crownstone may have so the simulation can be restarted.
-        #If resetTrainingData is False, you should clear all state data except that referring to the training sets.
-        if resetTrainingData == True:
-            self.flag, self.label = 0, 0
-            self.radiomap = {}
-            self.w, self.publish, self.timelimit_1, self.timelimit_2, self.timelimit_3 = 0, 0, 0, 0, 0 
-            self.nodes, self.rooms = 11, 7
-            self.cluster, self.counter, self.parameters ={}, {}, {}
-            self.count, self.param = 1, 1
-        else:
-            self.predictions, self.testSet, self.probabilities, self.predictedroom = {}, {}, {}, {}
-            self.publish, self.resetTrainingData, self.param = 1, 1, 1
-            self.nodes, self.rooms = 11, 7
-            self.cluster, self.counter ={}, {}
-            self.count = 1
-            self.flag = 2
-            self.timelimit_1 = self.time
-            self.timelimit_2 = self.time
-
-        # self.print ("resetTrainingData" + str(self.time))
-
-
     def receiveMessage(self, data, rssi):
-        if data["payload"] == "StartTraining" :
+        if data["payload"] == "StartTraining":
             self.label = self.label+1
             self.radiomap[self.label] = {}
             self.flag = 1
-        # When I receive "Start training" a flag informs the crownstones to start constructing their radio maps.
-        if data["payload"] == "StopTraining" :
+        if data["payload"] == "StopTraining":
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
             #the parameters (mean & standard deviation) to be calculated only once. flag: self.param
-            self.param = 1
+            self.calc_stat = 1
             self.flag = 2
-            self.timelimit_1 = self.time
-            self.timelimit_2 = self.time
-            self.timelimit_3 = self.time
+            self.timelimit_1, self.timelimit_2, self.timelimit_3 = self.time, self.time, self.time
 
         # both the radio map construction and the testSet construction are held in both receiveMessage and newMeasurement functions
         # as the radio map of each crownstone contains information (RSSI values) received from other crownstones. Either from all the crownstones
         # in the mesh network (all crownstones have the same data - highest ttl - fully connected graph) or from only their neighbours (ttl=1 - not fully connected graph).        
         if (self.flag == 1):
-            #Construction of radiomap.
+            # Construction of radiomap during the training phase
             if 'rssi' in data['payload']:
                 if data['payload']['originalSender'] not in self.radiomap[self.label]:
-                    self.radiomap[self.label][data['payload']['originalSender']]=[]
+                    self.radiomap[self.label][data['payload']['originalSender']] = []
                 self.radiomap[self.label][data['payload']['originalSender']].append(data['payload']['rssi'])  
             self.member[self.id] = 0
             self.outsider[self.id] = 0
 
-                            
-        
+        # Calculate statistical parameters (mean & std_dev) once at the beginning of the localization phase where the training phase of all rooms is completed
         if (self.flag == 2):
-            if self.param == 1:
+            if self.calc_stat == 1:
                 self.parameters = self.crownParameters(self.radiomap)
-                self.param = 0
+                self.calc_stat = 0
 
+            # each node collects RSSI measurements from the other nodes
             if 'rssi' in data['payload']:
                 if data['payload']['originalSender'] not in self.testSet:
-                    self.testSet[data['payload']['originalSender']]=[]
-                    self.counter[data['payload']['originalSender']]=[]
+                    self.testSet[data['payload']['originalSender']] = []
+                    self.counter[data['payload']['originalSender']] = []
                     self.testSet[data['payload']['originalSender']].append(data['payload']['rssi'])
                     self.counter[data['payload']['originalSender']].append(1)
                 else:
                     self.testSet[data['payload']['originalSender']][0] += data['payload']['rssi']
                     self.counter[data['payload']['originalSender']][0] += 1
+                # the degree of each node is computed based on the number of neighbors that scan the user and send info to this node
                 degree = len(self.testSet) - 1
                 if self.id not in self.neighbors:
-                    self.neighbors[self.id]=[]
-                self.neighbors[self.id]=degree
-                self.sendMessage({"degree":degree}, 1)
+                    self.neighbors[self.id] = []
+                self.neighbors[self.id] = degree
+                self.sendMessage({"degree": degree}, 1)
 
             if 'degree' in data['payload']:
                 if data['sender'] not in self.neighbors:
-                    self.neighbors[data['sender']]=[]
-                self.neighbors[data['sender']]= data['payload']['degree']
+                    self.neighbors[data['sender']] = []
+                self.neighbors[data['sender']] = data['payload']['degree']
 
-            print ("self.id", self.id, "neigbors", self.neighbors)
+            #print("self.id", self.id, "neighbors", self.neighbors)
 
-            if (self.time > self.timelimit_1 + 1 and self.w==1):
+            if (self.time > self.timelimit_1 + 1 and self.w == 1):
                 self.timelimit_1 = self.time
                 #after my time limit I compute the average of the received RSSI values for myself and my neighbors.
                 new_testSet= {key: self.testSet.get(key, 0)[0] / self.counter.get(key, 0)[0] for key in set(self.testSet) | set(self.counter)}
@@ -125,13 +98,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
             if 'predictions' in data['payload']:
                 if self.count not in self.predictedroom:
-                    self.predictedroom[self.count]={}
+                    self.predictedroom[self.count] = {}
                 if data['payload']['cluster_head'] not in self.predictedroom[self.count]:
-                    self.predictedroom[self.count][data['payload']['cluster_head']]=[]
+                    self.predictedroom[self.count][data['payload']['cluster_head']] = []
                 self.predictedroom[self.count][data['payload']['cluster_head']].append(data['payload']['predictions'])
 
                 if self.count not in self.probabilities:
-                    self.probabilities[self.count]={}
+                    self.probabilities[self.count] = {}
                 if data['payload']['cluster_head'] not in self.probabilities[self.count]:
                     self.probabilities[self.count][data['payload']['cluster_head']]=[]
                 self.probabilities[self.count][data['payload']['cluster_head']].append(data['payload']['probabilities'])
@@ -154,7 +127,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
 
             if (self.time > self.timelimit_2 + 2.5 and self.w ==1):
-                self.timelimit_2 =self.time
+                self.timelimit_2 = self.time
                 # print ("crownstone", self.id)
                 # print ("predictedroom", self.predictedroom)
                 # print ("probabilities", self.probabilities)
@@ -170,7 +143,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                             else:
                                 rooms.append(room[0])
 
-                            for i in range (len(rooms)):
+                            for i in range(len(rooms)):
                                 if room_label == room[i]:
                                     n +=1
                         if n == k :
@@ -241,14 +214,14 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
     # Clustering method according to the degree of the nodes
     def Clustering(self, testSet):
-        print ("self.id", self.id)
-        print ("self.neighbors", self.neighbors)
-        n=0
+        print("self.id", self.id)
+        print("self.neighbors", self.neighbors)
+        n = 0
         node_degree = self.neighbors[self.id]
         for node, degree in self.neighbors.items():
             if node_degree >= degree:
-                n+=1
-        print ("n", n)
+                n += 1
+        print("n", n)
         if n == len(self.neighbors):
             cluster_head = self.id
             print ("cluster head", self.id)
@@ -260,28 +233,28 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         if self.id == cluster_head:
             probabilities = self.RoomProbabilities_norm(self.parameters, testSet)
             predictions = self.PredictRoom_norm(probabilities)
-            print ("predictions", predictions)
-            self.count = self.count +1
+            print("predictions", predictions)
+            self.count = self.count + 1
             if self.count not in self.predictedroom:
                 self.predictedroom[self.count]={}
             if self.id not in self.predictedroom[self.count]:
                 self.predictedroom[self.count][self.id]=[]
             self.predictedroom[self.count][self.id].append(predictions)
             self.count = self.count - 1
-            self.sendMessage({"predictions":predictions, "probabilities":probabilities, "cluster_head":self.id }, self.TTL_flood)
+            self.sendMessage({"predictions": predictions, "probabilities": probabilities, "cluster_head": self.id}, self.TTL_flood)
 
 
     def newMeasurement(self, data, rssi):
         #print(self.time, self.id, "scans", data["address"], " with payload ", data["payload"], " and rssi:", rssi)
         if (self.flag == 1):
-            self.sendMessage({"rssi":rssi, "originalSender":self.id}, 1)
+            self.sendMessage({"rssi": rssi, "originalSender": self.id}, 1)
             #Construction of radio map
             if self.id not in self.radiomap[self.label]:
-                self.radiomap[self.label][self.id]=[]
+                self.radiomap[self.label][self.id] = []
             self.radiomap[self.label][self.id].append(rssi)
 
         if (self.flag == 2):
-            self.sendMessage({"rssi":rssi, "originalSender":self.id}, 1)
+            self.sendMessage({"rssi": rssi, "originalSender": self.id}, 1)
             #If the crownstone is able to scan the user the flag w is set to 1, otherwise it remains 0
             self.w = 1
             # Every time I receive a new RSSI value I added to the previous one. I don't take different test sets but I make a sum of the RSSI values received.
@@ -293,8 +266,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             else:
                 self.testSet[self.id][0] += rssi
                 self.counter[self.id][0] += 1
-
-
 
     def crownParameters(self, radiomap):
         parameters={}
@@ -314,11 +285,9 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         parameters = [self.MeanValue(RSSI), self.StandardDeviation(RSSI)]
         return parameters
 
-
     def MeanValue(self, rss):
         mean = sum(rss)/float(len(rss))
         return mean 
-
 
     def StandardDeviation(self, rss):
         average = self.MeanValue(rss)
@@ -326,21 +295,11 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         standarddev = math.sqrt(variance)
         return standarddev
 
-
-    def PredictRoom_norm(self, probabilities):
-        room_predicted, best_probability = None, -1
-        for room_label, probability in probabilities.items():
-            if room_predicted is None or probability > best_probability:
-                best_probability = probability
-                room_predicted = room_label
-        return room_predicted
-
-
     def RoomProbabilities_norm(self, parameters, testSet):
-        probabilities1={}
-        norm_factor={}
-        norm_probabilities={}
-        for self.label, room_parameters in self.parameters.items():
+        probabilities1 = {}
+        norm_factor = {}
+        norm_probabilities = {}
+        for self.label, room_parameters in parameters.items():
             probabilities1[self.label]= {}
             for crown in room_parameters.items():
                 for node, rssi in testSet.items():
@@ -348,10 +307,10 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                         if crown[0] not in probabilities1[self.label]:
                             probabilities1[self.label][crown[0]]=[]
                         probabilities1[self.label][crown[0]].append(1/self.nodes)
-                        mean=crown[1][0]
-                        standardev=crown[1][1]
-                        exponent_numerator = math.pow(rssi-mean,2)
-                        exponent_denominator = 2*math.pow(standardev,2)
+                        mean = crown[1][0]
+                        standardev = crown[1][1]
+                        exponent_numerator = math.pow(rssi-mean, 2)
+                        exponent_denominator = 2*math.pow(standardev, 2)
                         exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
                         prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
                         #non-normalized probabilities
@@ -359,7 +318,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                         probabilities1[self.label][node][0] *= prob_density
         #normalization_factor one for each crownstone, sum of non-normalized probabilities for all rooms
         n, k, h = 0, 0, 0
-        nodes =[]
+        nodes = []
         for self.label, prob in probabilities1.items():
             for node in prob.items():
                 node_number = node[0]
@@ -384,6 +343,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 norm_probabilities[self.label] *= (1/ norm_factor[node[0]])* node[1][0]
         return norm_probabilities
 
+    def PredictRoom_norm(self, probabilities):
+        room_predicted, best_probability = None, -1
+        for room_label, probability in probabilities.items():
+            if room_predicted is None or probability > best_probability:
+                best_probability = probability
+                room_predicted = room_label
+        return room_predicted
 
     def Accuracy(self, testSet, predictions):
         correct = 0

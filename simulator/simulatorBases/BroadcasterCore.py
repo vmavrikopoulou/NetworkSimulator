@@ -1,9 +1,7 @@
 from simulator.Exceptions import SimulatorException, SimulatorError
-import random
 
 class BroadcasterCore:
-    
-    
+
     def __init__(self, address):
         self.intervalMs = None
         self.payload = None
@@ -45,5 +43,3 @@ class BroadcasterCore:
             
     def tick(self, time):
         pass
-    
-    

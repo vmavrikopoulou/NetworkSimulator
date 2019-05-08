@@ -4,7 +4,6 @@ import math
 import operator
 import string
 
-
 class SimulatorCrownstone(GuiCrownstoneCore):
     
     """
@@ -17,13 +16,13 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         #self.debugPrint = False
         self.flag = 0 
         self.radiomap = {}
-        self.label= 0
-        self.predictions={}
+        self.label = 0
+        self.predictions = {}
         self.testSet = {}
         self.counter = 0
-        self.sign= 0
+        self.sign = 0
         self.test_dataset = 0
-        self.n=0
+        self.n = 0
         self.publish=0
         self.param=0
         self.timer=0
@@ -33,10 +32,11 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         self.nodes = 7
         self.Map = {}
         self.count = 0
-
-    def print(data):
-        if self.debugPrint:
-            print(data)
+        self.parameters = {}
+    #
+    # def print(data):
+    #     if self.debugPrint:
+    #         print(data)
 
     def resetState(self, resetTrainingData):
         #This is an important method to reset any state the Crownstone may have so the simulation can be restarted.
@@ -44,30 +44,29 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         if resetTrainingData:
             self.flag = 0 
             self.radiomap ={}
-            self.label= 0
-            self.predictions={}
+            self.label = 0
+            self.predictions = {}
             self.testSet = {}
             self.counter = 0
-            self.sign= 0
+            self.sign = 0
             self.test_dataset = 0
-            self.n=0
-            self.k=0
+            self.n = 0
+            self.k = 0
             self.publish = 0
-            self.param=1
+            self.param = 1
+            self.parameters = {}
         else:
             self.testSet = {}
             self.test_dataset = 0
-            self.label=0
-            self.predictions= {}
-            self.counter= 0
-            self.sign= 0
-            self.n=0
+            self.label = 0
+            self.predictions = {}
+            self.counter = 0
+            self.sign = 0
+            self.n = 0
             self.flag = 2
             self.publish = 1
             self.param = 0
-
-    
-
+            self.parameters = {}
 
     # overloaded
     def receiveMessage(self, data, rssi):
@@ -128,12 +127,12 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if len(self.testSet[self.counter]) == self.nodes:
                     self.w = 0
                 else:
-                    self.w=1
+                    self.w = 1
 
-            if self.count == 1 :
+            if self.count == 1:
                 self.count = 0
-                self.predictions = self.Predictions(self.parameters, self.testSet)
-                print ("self.predictions", self.predictions)
+                self.predictions = self.Predictions()
+                print("self.predictions", self.predictions)
                 if self.predictions[0] == 1:
                     roomId = "Room 1"
                 elif self.predictions[0] == 2:
@@ -156,7 +155,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                             for ck in values.keys():
                                 if ck == y:
                                     self.Map[key][ck]= roomId
-                accuracy = self.Accuracy(self.testSet, self.predictions)
+                accuracy = self.Accuracy(self.predictions)
                 print('Accuracy: ' + repr(accuracy) + '%')
             self.count = self.count + 1
 
@@ -231,10 +230,10 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         return standarddev
 
 
-    def Predictions(self, parameters, testSet):
+    def Predictions(self):
         predictions = []
         for counter in self.testSet:
-            room_label = self.PredictRoom(self.parameters, self.testSet[counter])
+            room_label = self.PredictRoom(self.testSet[counter])
             if self.publish==1:
                 if room_label==1:
                     self.publishResult("Room 1")
@@ -254,17 +253,17 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         return predictions
 
 
-    def Predictions_norm(self, parameters, testSet):
-        predictions = []
-        for counter in self.testSet:
-            room_label = self.PredictRoom_norm(self.parameters, self.testSet[counter])
-            # self.publishResult(room_label)
-            predictions.append(room_label)
-        return predictions
+    # def Predictions_norm(self):
+    #     predictions = []
+    #     for counter in self.testSet:
+    #         room_label = self.PredictRoom_norm(self.parameters, self.testSet[counter])
+    #         # self.publishResult(room_label)
+    #         predictions.append(room_label)
+    #     return predictions
 
 
-    def PredictRoom(self, parameters, testSet):
-        probabilities = self.RoomProbabilities(self.parameters, testSet)
+    def PredictRoom(self, testSet):
+        probabilities = self.RoomProbabilities(testSet)
         room_predicted, best_probability = None, -1
         for room_label, probability in probabilities.items():
             if room_predicted is None or probability > best_probability:
@@ -272,17 +271,17 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 room_predicted = room_label
         return room_predicted
 
-    def PredictRoom_norm(self, parameters, testSet):
-        probabilities = self.RoomProbabilities_norm(self.parameters, testSet)
-        room_predicted, best_probability = None, -1
-        for room_label, probability in probabilities.items():
-            if room_predicted is None or probability > best_probability:
-                best_probability = probability
-                room_predicted = room_label
-        return room_predicted
+    # def PredictRoom_norm(self, testSet):
+    #     probabilities = self.RoomProbabilities_norm(self.parameters, testSet)
+    #     room_predicted, best_probability = None, -1
+    #     for room_label, probability in probabilities.items():
+    #         if room_predicted is None or probability > best_probability:
+    #             best_probability = probability
+    #             room_predicted = room_label
+    #     return room_predicted
 
 
-    def RoomProbabilities(self, parameters, testSet):
+    def RoomProbabilities(self, testSet):
         probabilities={}
         n=0
         for self.label, room_parameters in self.parameters.items():
@@ -302,78 +301,49 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         return probabilities
 
 
-    def RoomProbabilities_norm(self, parameters, testSet):
-        probabilities1={}
-        norm_factor={}
-        norm_probabilities={}
-        for self.label, room_parameters in self.parameters.items():
-            probabilities1[self.label]= {}
-            for crown in room_parameters.items():
-                if crown[0] not in probabilities1[self.label]:
-                    probabilities1[self.label][crown[0]]=[]
-                probabilities1[self.label][crown[0]].append(1)
-                for node, rssi in testSet.items():
-                    if crown[0] == node:
-                        mean=crown[1][0]
-                        standardev=crown[1][1]
-                        exponent_numerator = math.pow(rssi[0]-mean,2)
-                        exponent_denominator = 2*math.pow(standardev,2)
-                        exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
-                        prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
-                        #non-normalized probabilities
-                        #product of our prior distribution
-                        probabilities1[self.label][node][0] *= prob_density
-        #normalization_factor one for each crownstone, sum of non-normalized probabilities for all rooms
-        n=1
-        for self.label, prob in probabilities1.items():
-            for node in prob.items():
-                if n <= len(prob):
-                    norm_factor[node[0]] = node[1][0]
-                    n=n+1
-                else:
-                    norm_factor[node[0]] += node[1][0]
-            #print ("normalization_factor", norm_factor)
-        for self.label, prob in probabilities1.items():
-            norm_probabilities[self.label]=1
-            for node in prob.items():
-                norm_probabilities[self.label] *= (1/ norm_factor[node[0]])* node[1][0]
-        #print ("norm_probabilities",norm_probabilities)
-        return norm_probabilities
+    # def RoomProbabilities_norm(self, testSet):
+    #     probabilities1={}
+    #     norm_factor={}
+    #     norm_probabilities={}
+    #     for self.label, room_parameters in self.parameters.items():
+    #         probabilities1[self.label]= {}
+    #         for crown in room_parameters.items():
+    #             if crown[0] not in probabilities1[self.label]:
+    #                 probabilities1[self.label][crown[0]]=[]
+    #             probabilities1[self.label][crown[0]].append(1)
+    #             for node, rssi in testSet.items():
+    #                 if crown[0] == node:
+    #                     mean=crown[1][0]
+    #                     standardev=crown[1][1]
+    #                     exponent_numerator = math.pow(rssi[0]-mean,2)
+    #                     exponent_denominator = 2*math.pow(standardev,2)
+    #                     exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
+    #                     prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
+    #                     #non-normalized probabilities
+    #                     #product of our prior distribution
+    #                     probabilities1[self.label][node][0] *= prob_density
+    #     #normalization_factor one for each crownstone, sum of non-normalized probabilities for all rooms
+    #     n=1
+    #     for self.label, prob in probabilities1.items():
+    #         for node in prob.items():
+    #             if n <= len(prob):
+    #                 norm_factor[node[0]] = node[1][0]
+    #                 n=n+1
+    #             else:
+    #                 norm_factor[node[0]] += node[1][0]
+    #         #print ("normalization_factor", norm_factor)
+    #     for self.label, prob in probabilities1.items():
+    #         norm_probabilities[self.label]=1
+    #         for node in prob.items():
+    #             norm_probabilities[self.label] *= (1/ norm_factor[node[0]])* node[1][0]
+    #     #print ("norm_probabilities",norm_probabilities)
+    #     return norm_probabilities
 
 
-    def Accuracy(self, testSet, predictions):
+    def Accuracy(self, predictions):
         correct = 0
-        room= 2
+        room = 2
         for x in range(len(predictions)):
             if room == (predictions[x]):
                 correct += 1
         return (correct/float(len(predictions))) * 100.0
-
-
-
-##### 1st way : without missing values 
-
-    # the testSet_row for every counter is passed as a list in case there is no missing values.
-    #def Predictions(self, parameters, testSet):
-    #    predictions = []
-    #    for counter in self.testSet:
-    #        testList = [self.testSet[counter][key][0] for key in sorted(self.testSet[counter].keys())]
-    #        room_label = self.PredictRoom(self.parameters, testList)
-    #        predictions.append(room_label)
-    #    return predictions
-
-    #In case of not missing values I just regard that each element of a list corresponds to a crownstone/node.
-    #def RoomProbabilities_1(self, parameters, testSet):
-    #    probabilities={}
-    #    for self.label, room_parameters in self.parameters.items():
-    #        probabilities[self.label] = 1
-    #        for crown in room_parameters.items():
-    #            mean=crown[1][0]
-    #            standardev=crown[1][1] 
-    #            i=crown[0]    
-    #            exponent_numerator = math.pow(testSet[i-1]-mean,2)
-    #            exponent_denominator = 2*math.pow(standardev,2)
-    #            exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
-    #            prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
-    #            probabilities[self.label] *= prob_density
-    #    return probabilities

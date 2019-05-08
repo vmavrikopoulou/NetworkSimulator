@@ -7,12 +7,15 @@
   "nValueUser": 3.5,
   "rssiMinimumUser": -95,
 
+  "rssiNoiseFactor": 0.01,
+  "messageLossProbability": 0.25,
+
   "transmissionDelayInSeconds": 0,
 
   "simulateOutsideRooms": false,
   "userWalkingSpeed": 1.1,
   "simulationPredefinedEndpoint": 0,
-  "simulationBatchTimeStepSizeSeconds": 230,
+  "simulationBatchTimeStepSizeSeconds": 272,
   "trainingPhaseDurationSeconds": 211.8,
   "simulationForMeasurementResultMaxSeconds":20,
   "simulationTimeStepSeconds": 0.01,

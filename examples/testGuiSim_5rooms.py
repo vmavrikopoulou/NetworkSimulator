@@ -65,16 +65,16 @@ b.loadConfig(config)
 a.loadSimulator(b) # this will load the user module into the simulator as a broadcaster.
 
 #a.startSimulation(140)
-a.run()
+# a.run()
 
 
 
 # # running without gui interaction:
-# a.initScreen()
-# a.render(a.screen)
-# a.calculateGroundTruthMap()
-# a.getSingleStaticResult(False)
-# #
+a.initScreen()
+a.render(a.screen)
+a.calculateGroundTruthMap()
+a.getSingleStaticResult(False)
+#
 # # results live in:
 # print(a.groundTruthMap)
 # print(a.resultMap)

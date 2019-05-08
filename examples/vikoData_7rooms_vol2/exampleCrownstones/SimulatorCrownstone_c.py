@@ -53,7 +53,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         #the result map of each crownstone should be created after the crownstones have received the info from their neighbors 
         if (self.time > self.timelimit+0.5 and self.resetTrainingData == 1) :
             self.timelimit = self.timelimit+500
-            print ("testSet", self.testSet)
             if len(self.testSet) != 0:
                 self.probabilities, self.predictions = self.Predictions_norm(self.parameters, self.testSet)
                 if self.predictions[0] == 1:
@@ -251,8 +250,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             best_probability, room_label = self.PredictRoom_norm(self.parameters, self.testSet[counter])
             probabilities.append(best_probability)
             predictions.append(room_label)
-            print ("probabilities", probabilities)
-            print ("predictions", predictions)
         return probabilities, predictions
 
 
@@ -316,22 +313,18 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                         #product of our prior distribution
                         probabilities1[self.label][node][0] *= prob_density
         #normalization_factor one for each crownstone, sum of non-normalized probabilities for all rooms
-        print ('probabilities1', probabilities1)
         n=1
         for self.label, prob in probabilities1.items():
-            print ("prob", prob)
             for node in prob.items():
                 if n <= len(prob):
                     norm_factor[node[0]] = node[1][0]
                     n=n+1
                 else:
-                    norm_factor[node[0]] += node[1][0]
-            #print ("normalization_factor", norm_factor)
+                    norm_factor[node[0]] += node[1][0]r)
         for self.label, prob in probabilities1.items():
             norm_probabilities[self.label]=1
             for node in prob.items():
                 norm_probabilities[self.label] *= (1/ norm_factor[node[0]])* node[1][0]
-        print ("norm_probabilities",norm_probabilities)
         return norm_probabilities
 
 

@@ -284,37 +284,3 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             if room == (predictions[x]):
                 correct += 1
         return (correct/float(len(predictions))) * 100.0
-
-
-
-##### 1st way : without missing values 
-
-    # the testSet_row for every counter is passed as a list in case there is no missing values.
-    #def Predictions(self, parameters, testSet):
-    #    predictions = []
-    #    for counter in self.testSet:
-    #        testList = [self.testSet[counter][key][0] for key in sorted(self.testSet[counter].keys())]
-    #        room_label = self.PredictRoom(self.parameters, testList)
-    #        predictions.append(room_label)
-    #    return predictions
-
-    #In case of not missing values I just regard that each element of a list corresponds to a crownstone/node.
-    #def RoomProbabilities_1(self, parameters, testSet):
-    #    probabilities={}
-    #    for self.label, room_parameters in self.parameters.items():
-    #        probabilities[self.label] = 1
-    #        for crown in room_parameters.items():
-    #            mean=crown[1][0]
-    #            standardev=crown[1][1] 
-    #            i=crown[0]    
-    #            exponent_numerator = math.pow(testSet[i-1]-mean,2)
-    #            exponent_denominator = 2*math.pow(standardev,2)
-    #            exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
-    #            prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
-    #            probabilities[self.label] *= prob_density
-    #    return probabilities
-
-
-
-
-            

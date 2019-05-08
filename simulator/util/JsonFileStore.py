@@ -50,4 +50,3 @@ class JsonFileStore:
         fileHandle.write("")
         fileHandle.close()
         self.memoryStore = {}
-    

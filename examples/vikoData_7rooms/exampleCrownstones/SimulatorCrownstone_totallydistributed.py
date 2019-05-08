@@ -83,11 +83,11 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.w1=0
             self.w2=0
             self.w3=0
-            self.prob1 =0
-            self.prob2 =0
-            self.prob3 =0
-            self.flag = 2
-            self.publish = 1
+            self.prob1=0
+            self.prob2=0
+            self.prob3=0
+            self.flag= 2
+            self.publish= 1
             self.probabilities = {}
             self.room_predicted=[]
             self.dataset=[]
@@ -135,36 +135,23 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     self.room7.append(data['payload'][key][7])
                     print ("self.room1", self.room1)
                     if self.w1 % 2 == 0:
-                        prob1 = numpy.prod(self.room1) 
-                        print ("probability1", prob1) 
-                        prob2 = numpy.prod(self.room2) 
-                        #print ("probability2", prob2) 
-                        prob3 = numpy.prod(self.room3) 
-                        #print ("probability3", prob3)
-                        prob4 = numpy.prod(self.room4) 
-                        #print ("probability4", prob4) 
-                        prob5 = numpy.prod(self.room5) 
-                        #print ("probability5", prob5) 
-                        prob6 = numpy.prod(self.room6) 
-                        #print ("probability6", prob6) 
-                        prob7 = numpy.prod(self.room7) 
-                        #print ("probability7", prob7)
+                        prob1 = numpy.prod(self.room1)
+                        prob2 = numpy.prod(self.room2)
+                        prob3 = numpy.prod(self.room3)
+                        prob4 = numpy.prod(self.room4)
+                        prob5 = numpy.prod(self.room5)
+                        prob6 = numpy.prod(self.room6)
+                        prob7 = numpy.prod(self.room7)
                         a = prob1 + prob2 + prob3 + prob4 + prob5 + prob6 + prob7
                         print ("normalization_factor", a)
                         self.prob1 = prob1/a
                         print ("prob1", self.prob1)
                         self.prob2 = prob2/a
-                        #print ("prob2", self.prob2)
                         self.prob3 = prob3/a
-                        #print ("prob3", self.prob3)
                         self.prob4 = prob4/a
-                        #print ("prob4", self.prob4)
                         self.prob5 = prob5/a
-                        #print ("prob5", self.prob5)
                         self.prob6 = prob6/a
-                        #print ("prob6", self.prob6)
                         self.prob7 = prob7/a
-                        #print ("prob7", self.prob7)
                         best_prob = self.prob1
                         room_pred = 1
                         if self.prob2 > best_prob :
@@ -187,14 +174,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                             room_pred = 7
                         self.room_predicted.append(room_pred)
             self.w1=self.w1+1
-            #print ("room1", self.room1)
-            #print ("room2", self.room2)
-            #print ("room3", self.room3)
-            #print ("room4", self.room4)
-            #print ("room5", self.room5)
-            #print ("room6", self.room6)
-            #print ("room7", self.room7)
-            #print ("room_predicted", self.room_predicted)                    
             
 
         # if (self.flag == 3 and self.n == 0) or (self.flag == 4):
@@ -241,7 +220,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 self.dataset = []
                 self.probabilities[self.id]=self.Predictions_norm(self.parameters, self.test_dataset)
                 self.sendMessage(self.probabilities, 2)
-
                 self.w2 = self.w2 + 1
 
 
@@ -275,7 +253,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     def Predictions_norm(self, parameters, testSet):
         for counter in self.testSet:
             probabilities = self.RoomProbabilities_norm(self.parameters, self.testSet[counter])
-            #self.publishResult(room_label)
         return probabilities
 
     def RoomProbabilities_norm(self, parameters, testSet):
@@ -317,45 +294,3 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 norm_probabilities[self.label] *= (1/ norm_factor[node[0]])* node[1][0]
         #print ('norm_probabilities', norm_probabilities)
         return norm_probabilities
-
-    def Accuracy(self, testSet, predictions):
-        correct = 0
-        room= 2
-        for x in range(len(predictions)):
-            if room == (predictions[x]):
-                correct += 1
-        return (correct/float(len(predictions))) * 100.0
-
-
-
-##### 1st way : without missing values 
-
-    # the testSet_row for every counter is passed as a list in case there is no missing values.
-    #def Predictions(self, parameters, testSet):
-    #    predictions = []
-    #    for counter in self.testSet:
-    #        testList = [self.testSet[counter][key][0] for key in sorted(self.testSet[counter].keys())]
-    #        room_label = self.PredictRoom(self.parameters, testList)
-    #        predictions.append(room_label)
-    #    return predictions
-
-    #In case of not missing values I just regard that each element of a list corresponds to a crownstone/node.
-    #def RoomProbabilities_1(self, parameters, testSet):
-    #    probabilities={}
-    #    for self.label, room_parameters in self.parameters.items():
-    #        probabilities[self.label] = 1
-    #        for crown in room_parameters.items():
-    #            mean=crown[1][0]
-    #            standardev=crown[1][1] 
-    #            i=crown[0]    
-    #            exponent_numerator = math.pow(testSet[i-1]-mean,2)
-    #            exponent_denominator = 2*math.pow(standardev,2)
-    #            exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
-    #            prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
-    #            probabilities[self.label] *= prob_density
-    #    return probabilities
-
-
-
-
-            

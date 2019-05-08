@@ -1,5 +1,5 @@
 # Every crownstone creates its ResultMap and no result is published in order to not influence the way that the testdata 
-#is created for every crownstone. A confidence Map with the probabilities that correspond to each labelroom
+# is created for every crownstone. A confidence Map with the probabilities that correspond to each labelroom is created as well.
 
 from simulator.simulatorBases.CrownstoneCore import CrownstoneCore
 from simulator.simulatorBases.GuiCrownstoneCore import GuiCrownstoneCore
@@ -13,28 +13,28 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     """
         Class variables are created here.
     """
-    #myValue = False
+    # myValue = False
 
     def __init__(self, id, x, y):
-        super().__init__(id=id,x=x,y=y)
-        #self.debugPrint = False
-        self.flag, self.label, self.counter, self.param, self.value= 0, 0, 0, 0 ,0
+        super().__init__(id=id, x=x, y=y)
+        # self.debugPrint = False
+        self.flag, self.label, self.counter, self.param, self.value = 0, 0, 0, 0, 0
         self.radiomap, self.predictions, self.testSet, self.probabilities = {}, {}, {}, {}
-        self.w, self.p, self.publish, self.resetTrainingData, self.timelimit =0, 0, 0, 0, 0
+        self.w, self.p, self.publish, self.resetTrainingData, self.timelimit = 0, 0, 0, 0, 0
         self.Map, self.confidence_Map = {}, {}
-        self.nodes = 7
+        self.nodes = 13
 
-    def print(self, data):
-        if self.debugPrint:
-            print(data)
+    # def print(self, data):
+    #     if self.debugPrint:
+    #         print(data)
 
     def resetState(self, resetTrainingData):
-        #This is an important method to reset any state the Crownstone may have so the simulation can be restarted.
-        #If resetTrainingData is False, you should clear all state data except that referring to the training sets.
+        # This is an important method to reset any state the Crownstone may have so the simulation can be restarted.
+        # If resetTrainingData is False, you should clear all state data except that referring to the training sets.
         if resetTrainingData:
-            self.flag, self.label, self.counter= 0, 0, 0
-            self.radiomap= {}
-            self.w, self.p, self.publish=0, 0, 0
+            self.flag, self.label, self.counter = 0, 0, 0
+            self.radiomap = {}
+            self.w, self.p, self.publish = 0, 0, 0
             self.param=1
         else:
             self.counter, self.param, self.value= 0, 0, 0
@@ -43,19 +43,20 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             self.publish, self.resetTrainingData = 1, 1
             self.timelimit = self.time
             self.flag = 2
+            self.nodes = 13
         # self.print ("resetTrainingData" + str(self.time))
             
 
     def tick(self, time):
-        # self.print("TICKY" + str(time) + "  " + str(self.time))
+        self.print("TICK" + str(time) + "  " + str(self.time))
         # self.print("simTime" + str(self.time) + " limit: " + str(self.timelimit))
-        #make predictions after 0.5 sec
-        #the result map of each crownstone should be created after the crownstones have received the info from their neighbors 
-        if (self.time > self.timelimit+0.5 and self.resetTrainingData == 1) :
-            self.timelimit = self.timelimit+500
-            print ("testSet", self.testSet)
-            if len(self.testSet) != 0:
+        # make predictions after 0.5 sec
+        # the result map of each crownstone should be created after the crownstones have received the info from their neighbors
+        if (self.time > self.timelimit + 0.04 and self.resetTrainingData == 1) :
+            self.timelimit = self.timelimit + 0.04
+            if len(self.testSet) != 0 and self.param ==1:
                 self.probabilities, self.predictions = self.Predictions_norm(self.parameters, self.testSet)
+                print (" self.predictions", self.predictions)
                 if self.predictions[0] == 1:
                     roomId = "Room 1"
                 elif self.predictions[0] == 2:
@@ -73,6 +74,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if 'x' in self.debugInformation:
                     x = int(self.debugInformation['x'])
                     y = int(self.debugInformation['y'])
+                    print("debug info x", x)
+                    print("debug info y", y)
                     # construct the result map of every crownstone
                     for key, values in self.Map.items(): 
                         if key == x:
@@ -85,24 +88,23 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                             for ck in values.keys():
                                 if ck == y:
                                    self.confidence_Map[key][ck]= self.probabilities[0]
-                accuracy = self.Accuracy(self.testSet, self.predictions)
-
-
+                print ("self.Map", self.Map)
+                print ("confidence Map", self.confidence_Map)
+                accuracy = self.Accuracy(self.predictions)
 
     def receiveMessage(self, data, rssi):
         #print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
-        if data["payload"] == "StartTraining" :
+        if data["payload"] == "StartTraining":
             self.label = self.label+1
             self.radiomap[self.label] = {}
             self.flag = 1
         # When I receive "Start training" a flag informs the crownstones to start constructing their radio maps.
-        if data["payload"] == "StopTraining" :
+        if data["payload"] == "StopTraining":
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
             #the parameters (mean & standard deviation) to be calculated only once. flag: self.param
             self.param = 1
             self.flag = 2
-
 
         # both the radio map construction and the testSet construction are held in both receiveMessage and newMeasurement functions
         # as the radio map of each crownstone contains information (RSSI values) received from other crownstones. Either from all the crownstones
@@ -113,8 +115,6 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 if data['payload']['originalSender'] not in self.radiomap[self.label]:
                     self.radiomap[self.label][data['payload']['originalSender']]=[]
                 self.radiomap[self.label][data['payload']['originalSender']].append(data['payload']['rssi'])
-        
-                            
 
         if (self.flag == 2):
             #The parameters (mean & standard deviation) of each crownstone for each room are calculated only once after the end of the training phase.
@@ -124,16 +124,15 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                 #Initialization of result map for every crownstone
                 self.Map = {}
                 self.confidence_Map = {}
-                for self.x in range (85, 735, 10):
+                for self.x in range(85, 735, 10):
                     self.Map[self.x] = {}
                     self.confidence_Map[self.x] = {}
                     for self.y in range(85, 855, 10):
                         self.Map[self.x][self.y] = None
                         self.confidence_Map[self.x][self.y] = None
-                self.param=0
+                self.param = 0
 
-
-            if self.w==0:
+            if self.w == 0:
                 self.counter = self.counter +1
                 #self.testSet[self.counter]={}
                 #for a complete testSet if a crownstone doesn't even scan the user, set RSSI to a really small value.
@@ -188,7 +187,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
 
     def crownParameters(self, radiomap):
         parameters={}
-        for self.label, crowns in self.radiomap.items():
+        for self.label, crowns in radiomap.items():
             if self.label not in parameters:
                 parameters[self.label]={}
             sorted_crowns = sorted(crowns.items(), key=operator.itemgetter(0))
@@ -232,12 +231,12 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     #         #     elif room_label==4:
     #         #         self.publishResult("Room 4")
     #         #     elif room_label==5:
-    #         #         self.publishResult("Room 5") 
+    #         #         self.publishResult("Room 5")
     #         #     elif room_label==6:
     #         #         self.publishResult("Room 6")
     #         #     elif room_label==7:
-    #         #         self.publishResult("Room 7") 
-    #         probabilities.append(best_probability) 
+    #         #         self.publishResult("Room 7")
+    #         probabilities.append(best_probability)
     #         predictions.append(room_label)
     #         print ("probabilities", "predictions")
     #         print (probabilities, predictions)
@@ -247,12 +246,25 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     def Predictions_norm(self, parameters, testSet):
         predictions = []
         probabilities=[]
-        for counter in self.testSet:
-            best_probability, room_label = self.PredictRoom_norm(self.parameters, self.testSet[counter])
+        for counter in testSet:
+            best_probability, room_label = self.PredictRoom_norm(parameters, testSet[counter])
+            # if self.publish==1:
+            #     if room_label==1:
+            #         self.publishResult("Room 1")
+            #     elif room_label==2:
+            #         self.publishResult("Room 2")
+            #     elif room_label==3:
+            #         self.publishResult("Room 3")
+            #     elif room_label==4:
+            #         self.publishResult("Room 4")
+            #     elif room_label==5:
+            #         self.publishResult("Room 5")
+            #     elif room_label==6:
+            #         self.publishResult("Room 6")
+            #     elif room_label==7:
+            #         self.publishResult("Room 7")
             probabilities.append(best_probability)
             predictions.append(room_label)
-            print ("probabilities", probabilities)
-            print ("predictions", predictions)
         return probabilities, predictions
 
 
@@ -266,7 +278,7 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     #     return best_probability, room_predicted
 
     def PredictRoom_norm(self, parameters, testSet):
-        probabilities = self.RoomProbabilities_norm(self.parameters, testSet)
+        probabilities = self.RoomProbabilities_norm(parameters, testSet)
         room_predicted, best_probability = None, -1
         for room_label, probability in probabilities.items():
             if room_predicted is None or probability > best_probability:
@@ -297,8 +309,8 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     def RoomProbabilities_norm(self, parameters, testSet):
         probabilities1={}
         norm_factor={}
-        norm_probabilities={}
-        for self.label, room_parameters in self.parameters.items():
+        norm_probabilities = {}
+        for self.label, room_parameters in parameters.items():
             probabilities1[self.label]= {}
             for crown in room_parameters.items():
                 if crown[0] not in probabilities1[self.label]:
@@ -308,18 +320,16 @@ class SimulatorCrownstone(GuiCrownstoneCore):
                     if crown[0] == node:
                         mean=crown[1][0]
                         standardev=crown[1][1]
-                        exponent_numerator = math.pow(rssi[0]-mean,2)
-                        exponent_denominator = 2*math.pow(standardev,2)
+                        exponent_numerator = math.pow(rssi[0]-mean, 2)
+                        exponent_denominator = 2*math.pow(standardev, 2)
                         exponent_result = math.exp((-exponent_numerator)/exponent_denominator)
                         prob_density = (1 / (math.sqrt(2*math.pi) * standardev)) * exponent_result
                         #non-normalized probabilities
                         #product of our prior distribution
                         probabilities1[self.label][node][0] *= prob_density
         #normalization_factor one for each crownstone, sum of non-normalized probabilities for all rooms
-        print ('probabilities1', probabilities1)
         n=1
         for self.label, prob in probabilities1.items():
-            print ("prob", prob)
             for node in prob.items():
                 if n <= len(prob):
                     norm_factor[node[0]] = node[1][0]
@@ -330,18 +340,19 @@ class SimulatorCrownstone(GuiCrownstoneCore):
         for self.label, prob in probabilities1.items():
             norm_probabilities[self.label]=1
             for node in prob.items():
-                norm_probabilities[self.label] *= (1/ norm_factor[node[0]])* node[1][0]
-        print ("norm_probabilities",norm_probabilities)
+                norm_probabilities[self.label] *= (1/ norm_factor[node[0]]) * node[1][0]
         return norm_probabilities
 
 
-    def Accuracy(self, testSet, predictions):
+    def Accuracy(self, predictions):
         correct = 0
         room= 5
         for x in range(len(predictions)):
             if room == (predictions[x]):
                 correct += 1
         return (correct/float(len(predictions))) * 100.0
+
+
 
 
 

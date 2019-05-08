@@ -64,17 +64,17 @@ class SimulatorCrownstone(GuiCrownstoneCore):
             
     # overloaded
     def receiveMessage(self, data, rssi):
-        #print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
+        print(self.time, "Crownstone", self.id, "received from crownstone", data["sender"], "with payload", data["payload"], " and rssi:", rssi)
         """
             This is where mesh messages are received
             :param data:  { "sender":string, "payload": dictionary }
         """
-        if data["payload"] == "StartTraining" :
-            self.label = self.label+1
+        if data["payload"] == "StartTraining":
+            self.label += 1
             self.radiomap[self.label] = {}
             self.flag = 1
         # When I receive "Start training" a flag informs the crownstone to start constructing their radio maps till a "Stop training" is received.
-        if data["payload"] == "StopTraining" :
+        if data["payload"] == "StopTraining":
             self.flag = 0 
         if data["payload"] == "StartLocalizing":
             self.param = 1
@@ -347,6 +347,3 @@ class SimulatorCrownstone(GuiCrownstoneCore):
     #    return probabilities
 
 
-
-
-            

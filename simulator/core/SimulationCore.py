@@ -221,16 +221,16 @@ class SimulationCore:
             # deliver the message
             # the ttl has been reduced by 1 since it has been sent once.
             self.receivedCounter += 1
-            receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1}, rssi)
-            
+            receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1, "repeat": message["repeat"]},  rssi)
+            # receiver.receiveMessage({"sender": message["senderId"], "payload": message["payload"], "ttl": message["ttl"] - 1}, rssi)
+
             if random.random() < float(self.config["messageLossProbability"]):
                 message["repeat"] -= 1
                 if message["repeat"] < 0:
                     return MessageState.FAILED
-                
+
                 return MessageState.DELAYED
-            
-            
+
             if message["ttl"] > 1:
                 return MessageState.DELIVERED
             else:
@@ -247,6 +247,7 @@ class SimulationCore:
             "payload": message["payload"],
             "sender": message["receiverId"], # the receiver is now the sender
             "ttl": message["ttl"] - 1,
+            "repeat": message["repeat"]
         })
         
     receivedCounter = 0
@@ -266,6 +267,7 @@ class SimulationCore:
                 "receiverId": crownstone.id,
                 "sentTime": self.t,
                 "ttl": 1,
+                "repeat": 3,
                 "processed": False
             }
     
@@ -273,6 +275,7 @@ class SimulationCore:
     def _collectMessage(self, messageData):
         self.collectMessageCounter += 1
         ttl = messageData["ttl"]
+        repeat = messageData["repeat"]
         
         self.messageCounter += 1
         sourceId = self.messageCounter
@@ -298,11 +301,9 @@ class SimulationCore:
                 "receiverId": crownstoneId,
                 "sentTime":   self.t,
                 "ttl":        ttl,
+                "repeat":     repeat,
                 "processed":  False
             }
-        
-        
-        
     
     def constructTopology(self):
         # get the rssi between Crownstones
@@ -334,7 +335,6 @@ class SimulationCore:
     
     
         # there is no noise here to ensure that the topology is good.
+        #return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimumCrownstone"])
         return SimMath.getRSSI(rssiCalibration, NValue, distance, self.config["rssiMinimumCrownstone"], 0)
-        
-    
-    
+
